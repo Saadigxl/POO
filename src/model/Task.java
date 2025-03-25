@@ -3,40 +3,40 @@ package model;
 import java.time.LocalDate;
 
 public class Task {
+    private int id;
     private String title;
     private String description;
     private LocalDate dueDate;
-    private String status; // "À faire", "En cours", "Terminé"
-    private String priority; // "Haute", "Moyenne", "Basse"
+    private String priority;
     private String category;
+    private String status;
 
-    public Task(String title, String description, LocalDate dueDate, String priority, String category) {
+    public Task(int id, String title, String description, LocalDate dueDate, String priority, String category, String status) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
-        this.status = "À faire";
         this.priority = priority;
         this.category = category;
+        this.status = status;
     }
 
-    // Getters and Setters
+    // Getters
+    public int getId() { return id; }
     public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
     public LocalDate getDueDate() { return dueDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
     public String getPriority() { return priority; }
-    public void setPriority(String priority) { this.priority = priority; }
-
     public String getCategory() { return category; }
+    public String getStatus() { return status; }
+
+    // Setters
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+    public void setPriority(String priority) { this.priority = priority; }
     public void setCategory(String category) { this.category = category; }
+    public void setStatus(String status) { this.status = status; }
 
     @Override
     public String toString() {

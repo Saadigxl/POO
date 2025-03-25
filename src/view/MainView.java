@@ -17,7 +17,6 @@ import persistence.DatabasePersistence;
 import javafx.animation.FadeTransition;
 import javafx.animation.ScaleTransition;
 import javafx.util.Duration;
-
 import java.time.LocalDate;
 
 public class MainView extends Application {
@@ -31,7 +30,7 @@ public class MainView extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Initialize components
+        // Initialize the controller with persistence
         taskController = new TaskController(new User("JohnDoe"), new DatabasePersistence());
         taskList = FXCollections.observableArrayList(taskController.getAllTasks());
         taskListView = new ListView<>(taskList);
@@ -47,15 +46,14 @@ public class MainView extends Application {
         ComboBox<String> priorityComboBox = new ComboBox<>(FXCollections.observableArrayList("Haute", "Moyenne", "Basse"));
         Label categoryLabel = new Label("Catégorie:");
         TextField categoryField = new TextField();
+        Label statusLabel = new Label("Statut:");
+        ComboBox<String> statusComboBox = new ComboBox<>(FXCollections.observableArrayList("À faire", "En cours", "Terminé"));
+
         Button addButton = new Button("Ajouter une tâche");
         Button editButton = new Button("Modifier la tâche");
         Button deleteButton = new Button("Supprimer la tâche");
 
-        // Dropdown for task status updates
-        Label statusLabel = new Label("Statut:");
-        ComboBox<String> statusComboBox = new ComboBox<>(FXCollections.observableArrayList("À faire", "En cours", "Terminé"));
-
-        // Layout
+        // Layout setup
         GridPane inputGrid = new GridPane();
         inputGrid.setHgap(10);
         inputGrid.setVgap(10);
@@ -73,29 +71,29 @@ public class MainView extends Application {
 
         VBox root = new VBox(10, inputGrid, buttonBox, taskListView);
         root.setPadding(new Insets(20));
-// Fade-in effect for the whole UI
-FadeTransition fadeIn = new FadeTransition(Duration.millis(800), root);
-fadeIn.setFromValue(0);
-fadeIn.setToValue(1);
-fadeIn.play();
 
-// Scale effect for buttons when hovered
-applyButtonHoverAnimation(addButton);
-applyButtonHoverAnimation(editButton);
-applyButtonHoverAnimation(deleteButton);
+        // UI Effects
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(800), root);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
 
-        // Apply CSS styles
+        applyButtonHoverAnimation(addButton);
+        applyButtonHoverAnimation(editButton);
+        applyButtonHoverAnimation(deleteButton);
+
+        // Apply styles
         inputGrid.getStyleClass().add("grid-pane");
         root.getStyleClass().add("vbox");
         buttonBox.getStyleClass().add("hbox");
 
         // Event Handlers
         addButton.setOnAction(e -> {
-            String title = titleField.getText();
-            String description = descriptionField.getText();
+            String title = titleField.getText().trim();
+            String description = descriptionField.getText().trim();
             LocalDate dueDate = dueDatePicker.getValue();
             String priority = priorityComboBox.getValue();
-            String category = categoryField.getText();
+            String category = categoryField.getText().trim();
             String status = statusComboBox.getValue();
 
             if (title.isEmpty() || dueDate == null || priority == null || category.isEmpty() || status == null) {
@@ -103,7 +101,8 @@ applyButtonHoverAnimation(deleteButton);
                 return;
             }
 
-            taskController.addTask(title, description, dueDate, priority, category);
+            Task newTask = new Task(0, title, description, dueDate, priority, category, status);
+            taskController.addTask(title, description, dueDate, priority, category, status);
             taskList.setAll(taskController.getAllTasks());
             clearFields(titleField, descriptionField, dueDatePicker, priorityComboBox, categoryField, statusComboBox);
         });
@@ -116,18 +115,18 @@ applyButtonHoverAnimation(deleteButton);
             }
 
             // Update the selected task
-            selectedTask.setTitle(titleField.getText());
-            selectedTask.setDescription(descriptionField.getText());
+            selectedTask.setTitle(titleField.getText().trim());
+            selectedTask.setDescription(descriptionField.getText().trim());
             selectedTask.setDueDate(dueDatePicker.getValue());
             selectedTask.setPriority(priorityComboBox.getValue());
-            selectedTask.setCategory(categoryField.getText());
+            selectedTask.setCategory(categoryField.getText().trim());
             selectedTask.setStatus(statusComboBox.getValue());
 
-            taskController.saveTasks(taskList); // Save changes to the database
-            taskListView.refresh(); // Refresh the list view
+            taskController.updateTask(selectedTask);
+            taskListView.refresh();
         });
 
-        deleteButton.setOnAction(_ -> {
+        deleteButton.setOnAction(e -> {
             Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
             if (selectedTask == null) {
                 showAlert("Erreur", "Veuillez sélectionner une tâche à supprimer.");
@@ -135,7 +134,7 @@ applyButtonHoverAnimation(deleteButton);
             }
 
             taskController.removeTask(selectedTask);
-            taskList.remove(selectedTask);
+            taskList.setAll(taskController.getAllTasks());
         });
 
         // Populate fields when a task is selected
@@ -175,6 +174,7 @@ applyButtonHoverAnimation(deleteButton);
         categoryField.clear();
         statusComboBox.setValue(null);
     }
+
     private void applyButtonHoverAnimation(Button button) {
         button.setOnMouseEntered(e -> {
             ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), button);
@@ -182,7 +182,7 @@ applyButtonHoverAnimation(deleteButton);
             scaleUp.setToY(1.1);
             scaleUp.play();
         });
-    
+
         button.setOnMouseExited(e -> {
             ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), button);
             scaleDown.setToX(1.0);
@@ -190,5 +190,4 @@ applyButtonHoverAnimation(deleteButton);
             scaleDown.play();
         });
     }
-    
 }

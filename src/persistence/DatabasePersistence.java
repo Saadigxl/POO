@@ -1,77 +1,101 @@
 package persistence;
 
 import model.Task;
-
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DatabasePersistence {
-    private static final String DB_URL = "jdbc:sqlite:tasks.db";
+public class DatabasePersistence implements TaskPersistence {
+    private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
+    private static final String USER = "root"; // Change this if needed
+    private static final String PASSWORD = "RoHt9wD67"; // Change this if needed
 
     public DatabasePersistence() {
-        initializeDatabase();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
-    // Initialize the database and create the tasks table if it doesn't exist
-    private void initializeDatabase() {
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             Statement stmt = conn.createStatement()) {
-            String sql = "CREATE TABLE IF NOT EXISTS tasks (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "title TEXT NOT NULL, " +
-                    "description TEXT, " +
-                    "dueDate TEXT, " +
-                    "status TEXT, " +
-                    "priority TEXT, " +
-                    "category TEXT)";
-            stmt.execute(sql);
+    @Override
+    public void addTask(Task task) {
+        String sql = "INSERT INTO tasks (title, description, due_date, priority, category, status) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.setDate(3, Date.valueOf(task.getDueDate()));
+            stmt.setString(4, task.getPriority());
+            stmt.setString(5, task.getCategory());
+            stmt.setString(6, task.getStatus());
+
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Save tasks to the database
-    public void saveTasks(List<Task> tasks) {
-        String sql = "INSERT INTO tasks (title, description, dueDate, status, priority, category) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            for (Task task : tasks) {
-                pstmt.setString(1, task.getTitle());
-                pstmt.setString(2, task.getDescription());
-                pstmt.setString(3, task.getDueDate().toString());
-                pstmt.setString(4, task.getStatus());
-                pstmt.setString(5, task.getPriority());
-                pstmt.setString(6, task.getCategory());
-                pstmt.executeUpdate();
-            }
+    @Override
+    public void updateTask(Task task) {
+        String sql = "UPDATE tasks SET title=?, description=?, due_date=?, priority=?, category=?, status=? WHERE id=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.setDate(3, Date.valueOf(task.getDueDate()));
+            stmt.setString(4, task.getPriority());
+            stmt.setString(5, task.getCategory());
+            stmt.setString(6, task.getStatus());
+            stmt.setInt(7, task.getId());
+
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // Load tasks from the database
-    public List<Task> loadTasks() {
+    @Override
+    public void removeTask(Task task) {
+        String sql = "DELETE FROM tasks WHERE id=?";
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, task.getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Task> getAllTasks() {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT * FROM tasks";
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
+
             while (rs.next()) {
                 Task task = new Task(
+                        rs.getInt("id"),
                         rs.getString("title"),
                         rs.getString("description"),
-                        LocalDate.parse(rs.getString("dueDate")),
+                        rs.getDate("due_date").toLocalDate(),
                         rs.getString("priority"),
-                        rs.getString("category")
+                        rs.getString("category"),
+                        rs.getString("status")
                 );
-                task.setStatus(rs.getString("status"));
                 tasks.add(task);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return tasks;
     }
 }

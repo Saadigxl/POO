@@ -12,19 +12,12 @@ public class User {
         this.tasks = new ArrayList<>();
     }
 
-    // Getters and Setters
     public String getUsername() { return username; }
     public List<Task> getTasks() { return tasks; }
 
-    public void addTask(Task task) {
-        tasks.add(task);
-    }
+    public void addTask(Task task) { tasks.add(task); }
 
-    public void removeTask(Task task) {
-        tasks.remove(task);
-    }
+    public void removeTask(Task task) { tasks.remove(task); }
 
-    public void updateTaskStatus(Task task, String status) {
-        task.setStatus(status);
-    }
+    public void updateTaskStatus(Task task, String status) { task.setStatus(status); }
 }

@@ -1,48 +1,47 @@
 package controller;
 
-import javafx.collections.ObservableList;
 import model.Task;
 import model.User;
-import persistence.DatabasePersistence;
+import persistence.TaskPersistence;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public class TaskController {
-    private User user;
-    private DatabasePersistence dataPersistence;
+    private final User user;
+    private final TaskPersistence taskPersistence;
 
-    public TaskController(User user, DatabasePersistence dataPersistence) {
+    public TaskController(User user, TaskPersistence taskPersistence) {
         this.user = user;
-        this.dataPersistence = dataPersistence;
+        this.taskPersistence = taskPersistence;
     }
 
-    // Add a new task
-    public void addTask(String title, String description, LocalDate dueDate, String priority, String category) {
-        Task task = new Task(title, description, dueDate, priority, category);
-        user.addTask(task);
-        dataPersistence.saveTasks(user.getTasks());
+    /**
+     * Adds a new task to the database.
+     */
+    public void addTask(String title, String description, LocalDate dueDate, String priority, String category, String status) {
+        Task task = new Task(0, title, description, dueDate, priority, category, status);
+        taskPersistence.addTask(task);
     }
 
-    // Update task status
-    public void updateTaskStatus(Task task, String status) {
-        user.updateTaskStatus(task, status);
-        dataPersistence.saveTasks(user.getTasks());
+    /**
+     * Updates an existing task in the database.
+     */
+    public void updateTask(Task task) {
+        taskPersistence.updateTask(task);
     }
 
-    // Remove a task
+    /**
+     * Removes a task from the database.
+     */
     public void removeTask(Task task) {
-        user.removeTask(task);
-        dataPersistence.saveTasks(user.getTasks());
+        taskPersistence.removeTask(task);
     }
 
-    // Get all tasks
+    /**
+     * Fetches all tasks from the database.
+     */
     public List<Task> getAllTasks() {
-        return user.getTasks();
-    }
-
-    // Save tasks to the database
-    public void saveTasks(ObservableList<Task> tasks) {
-        dataPersistence.saveTasks(tasks);
+        return taskPersistence.getAllTasks();
     }
 }
