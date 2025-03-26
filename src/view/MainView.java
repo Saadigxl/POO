@@ -1,22 +1,23 @@
 package view;
 
 import controller.TaskController;
+import javafx.animation.FadeTransition;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.Task;
 import model.User;
 import persistence.DatabasePersistence;
-import javafx.animation.FadeTransition;
-import javafx.animation.ScaleTransition;
-import javafx.util.Duration;
+
 import java.time.LocalDate;
 
 public class MainView extends Application {
@@ -30,22 +31,85 @@ public class MainView extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // Initialize the controller with persistence
-        taskController = new TaskController(new User("JohnDoe"), new DatabasePersistence());
+        showWelcomeScreen(primaryStage);
+    }
+
+    private void showWelcomeScreen(Stage primaryStage) {
+        VBox welcomeLayout = new VBox(20);
+        welcomeLayout.setPadding(new Insets(50));
+        welcomeLayout.setAlignment(Pos.CENTER);
+        welcomeLayout.setStyle("-fx-background-color: black;");
+
+        Label universityLabel = new Label("Université de Science et Technologie Houari Boumediene");
+        universityLabel.setId("university-label");
+
+        Label welcomeLabel = new Label("Projet du module POO2: Task Manager");
+        welcomeLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        Button startButton = new Button("Commencer");
+        startButton.setId("commencer-button");
+        startButton.setOnAction(e -> fadeTransition(welcomeLayout, () -> showMainView(primaryStage)));
+
+        Label teamLabel = new Label("Boussada, Gueddouche, Boumedienne, Baatout");
+        teamLabel.setId("team-names");
+        teamLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
+
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(2), welcomeLabel);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
+
+        welcomeLayout.getChildren().addAll(universityLabel, teamLabel, welcomeLabel, startButton);
+        Scene welcomeScene = new Scene(welcomeLayout, 600, 400);
+        primaryStage.setScene(welcomeScene);
+        primaryStage.setTitle("Bienvenue");
+        primaryStage.show();
+        String css = getClass().getResource("/styles.css").toExternalForm();
+        welcomeScene.getStylesheets().add(css);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private void showMainView(Stage primaryStage) {
+        User user = new User("JohnDoe");
+        taskController = new TaskController(user, new DatabasePersistence());
         taskList = FXCollections.observableArrayList(taskController.getAllTasks());
         taskListView = new ListView<>(taskList);
 
-        // Create UI components
+        VBox root = setupMainUI();
+        Scene mainScene = new Scene(root, 600, 500);
+        primaryStage.setScene(mainScene);
+        primaryStage.setTitle("Task Manager");
+        String css = getClass().getResource("/styles.css").toExternalForm();
+        mainScene.getStylesheets().add(css);
+
+    }
+
+    private VBox setupMainUI() {
         Label titleLabel = new Label("Titre:");
         TextField titleField = new TextField();
+
         Label descriptionLabel = new Label("Description:");
         TextField descriptionField = new TextField();
+
         Label dueDateLabel = new Label("Date limite:");
         DatePicker dueDatePicker = new DatePicker();
+
         Label priorityLabel = new Label("Priorité:");
         ComboBox<String> priorityComboBox = new ComboBox<>(FXCollections.observableArrayList("Haute", "Moyenne", "Basse"));
+
         Label categoryLabel = new Label("Catégorie:");
         TextField categoryField = new TextField();
+
         Label statusLabel = new Label("Statut:");
         ComboBox<String> statusComboBox = new ComboBox<>(FXCollections.observableArrayList("À faire", "En cours", "Terminé"));
 
@@ -53,7 +117,46 @@ public class MainView extends Application {
         Button editButton = new Button("Modifier la tâche");
         Button deleteButton = new Button("Supprimer la tâche");
 
-        // Layout setup
+        // Adding Event to 'addButton'
+        addButton.setOnAction(e -> {
+            String title = titleField.getText();
+            String description = descriptionField.getText();
+            LocalDate dueDate = dueDatePicker.getValue();
+            String priority = priorityComboBox.getValue();
+            String category = categoryField.getText();
+            String status = statusComboBox.getValue();
+
+            if (title.isEmpty() || description.isEmpty() || dueDate == null || priority == null || category.isEmpty() || status == null) {
+                showAlert("Erreur", "Veuillez remplir tous les champs.");
+                return;
+            }
+
+            // Create Task and Add to Controller
+            Task newTask = new Task(0, title, description, dueDate, priority, category, status);
+            taskController.addTask(title, description, dueDate, priority, category, status);
+            taskList.add(newTask);
+
+            // Clear Input Fields
+            titleField.clear();
+            descriptionField.clear();
+            dueDatePicker.setValue(null);
+            priorityComboBox.setValue(null);
+            categoryField.clear();
+            statusComboBox.setValue(null);
+        });
+
+        // Delete Task Event
+        deleteButton.setOnAction(e -> {
+            Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
+            if (selectedTask == null) {
+                showAlert("Erreur", "Veuillez sélectionner une tâche à supprimer.");
+                return;
+            }
+            taskController.removeTask(selectedTask);
+            taskList.remove(selectedTask);
+        });
+
+        // Layout Grid
         GridPane inputGrid = new GridPane();
         inputGrid.setHgap(10);
         inputGrid.setVgap(10);
@@ -72,95 +175,16 @@ public class MainView extends Application {
         VBox root = new VBox(10, inputGrid, buttonBox, taskListView);
         root.setPadding(new Insets(20));
 
-        // UI Effects
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(800), root);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.play();
-
-        applyButtonHoverAnimation(addButton);
-        applyButtonHoverAnimation(editButton);
-        applyButtonHoverAnimation(deleteButton);
-
-        // Apply styles
-        inputGrid.getStyleClass().add("grid-pane");
-        root.getStyleClass().add("vbox");
-        buttonBox.getStyleClass().add("hbox");
-
-        // Event Handlers
-        addButton.setOnAction(e -> {
-            String title = titleField.getText().trim();
-            String description = descriptionField.getText().trim();
-            LocalDate dueDate = dueDatePicker.getValue();
-            String priority = priorityComboBox.getValue();
-            String category = categoryField.getText().trim();
-            String status = statusComboBox.getValue();
+        return root;
         
-            if (title.isEmpty() || dueDate == null || priority == null || category.isEmpty() || status == null) {
-                showAlert("Erreur", "Veuillez remplir tous les champs.");
-                return;
-            }
-        
-            Task newTask = new Task(0, title, description, dueDate, priority, category, status);
-            taskController.addTask(title, description, dueDate, priority, category, status);
-            
-            taskList.add(newTask); // Add directly to ListView
-            taskListView.refresh(); // Ensure UI refreshes
-        
-            System.out.println("Tasks after adding: " + taskController.getAllTasks()); // Debugging log
-        
-            clearFields(titleField, descriptionField, dueDatePicker, priorityComboBox, categoryField, statusComboBox);
-        });
-        
-        editButton.setOnAction(e -> {
-            Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
-            if (selectedTask == null) {
-                showAlert("Erreur", "Veuillez sélectionner une tâche à modifier.");
-                return;
-            }
+    }
 
-            // Update the selected task
-            selectedTask.setTitle(titleField.getText().trim());
-            selectedTask.setDescription(descriptionField.getText().trim());
-            selectedTask.setDueDate(dueDatePicker.getValue());
-            selectedTask.setPriority(priorityComboBox.getValue());
-            selectedTask.setCategory(categoryField.getText().trim());
-            selectedTask.setStatus(statusComboBox.getValue());
-
-            taskController.updateTask(selectedTask);
-            taskListView.refresh();
-        });
-
-        deleteButton.setOnAction(e -> {
-            Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
-            if (selectedTask == null) {
-                showAlert("Erreur", "Veuillez sélectionner une tâche à supprimer.");
-                return;
-            }
-
-            taskController.removeTask(selectedTask);
-            taskList.setAll(taskController.getAllTasks());
-        });
-
-        // Populate fields when a task is selected
-        taskListView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                titleField.setText(newSelection.getTitle());
-                descriptionField.setText(newSelection.getDescription());
-                dueDatePicker.setValue(newSelection.getDueDate());
-                priorityComboBox.setValue(newSelection.getPriority());
-                categoryField.setText(newSelection.getCategory());
-                statusComboBox.setValue(newSelection.getStatus());
-            }
-        });
-
-        // Set up the scene
-        Scene scene = new Scene(root, 600, 500);
-        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-
-        primaryStage.setTitle("Gestionnaire de Tâches");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+    private void fadeTransition(VBox layout, Runnable onFinish) {
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), layout);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        fadeOut.setOnFinished(e -> onFinish.run());
+        fadeOut.play();
     }
 
     private void showAlert(String title, String message) {
@@ -169,30 +193,5 @@ public class MainView extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    private void clearFields(TextField titleField, TextField descriptionField, DatePicker dueDatePicker, ComboBox<String> priorityComboBox, TextField categoryField, ComboBox<String> statusComboBox) {
-        titleField.clear();
-        descriptionField.clear();
-        dueDatePicker.setValue(null);
-        priorityComboBox.setValue(null);
-        categoryField.clear();
-        statusComboBox.setValue(null);
-    }
-
-    private void applyButtonHoverAnimation(Button button) {
-        button.setOnMouseEntered(e -> {
-            ScaleTransition scaleUp = new ScaleTransition(Duration.millis(200), button);
-            scaleUp.setToX(1.1);
-            scaleUp.setToY(1.1);
-            scaleUp.play();
-        });
-
-        button.setOnMouseExited(e -> {
-            ScaleTransition scaleDown = new ScaleTransition(Duration.millis(200), button);
-            scaleDown.setToX(1.0);
-            scaleDown.setToY(1.0);
-            scaleDown.play();
-        });
     }
 }
