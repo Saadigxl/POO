@@ -95,18 +95,23 @@ public class MainView extends Application {
             String priority = priorityComboBox.getValue();
             String category = categoryField.getText().trim();
             String status = statusComboBox.getValue();
-
+        
             if (title.isEmpty() || dueDate == null || priority == null || category.isEmpty() || status == null) {
                 showAlert("Erreur", "Veuillez remplir tous les champs.");
                 return;
             }
-
+        
             Task newTask = new Task(0, title, description, dueDate, priority, category, status);
             taskController.addTask(title, description, dueDate, priority, category, status);
-            taskList.setAll(taskController.getAllTasks());
+            
+            taskList.add(newTask); // Add directly to ListView
+            taskListView.refresh(); // Ensure UI refreshes
+        
+            System.out.println("Tasks after adding: " + taskController.getAllTasks()); // Debugging log
+        
             clearFields(titleField, descriptionField, dueDatePicker, priorityComboBox, categoryField, statusComboBox);
         });
-
+        
         editButton.setOnAction(e -> {
             Task selectedTask = taskListView.getSelectionModel().getSelectedItem();
             if (selectedTask == null) {
