@@ -21,6 +21,7 @@ public class TaskController {
     public void addTask(String title, String description, LocalDate dueDate, String priority, String category, String status) {
         Task task = new Task(0, title, description, dueDate, priority, category, status);
         taskPersistence.addTask(task);
+        user.getTasks().add(task); // Ensure it is also added to the user's list
     }
 
     /**
@@ -41,6 +42,17 @@ public class TaskController {
             throw new IllegalArgumentException("Task cannot be null");
         }
         taskPersistence.removeTask(task);
+        user.getTasks().remove(task); // Remove from user task list
+    }
+
+    /**
+     * Deletes a task from the database and user's task list.
+     */
+    public void deleteTask(Task task) {
+        if (task != null) {
+            taskPersistence.deleteTask(task); // Ensure TaskPersistence has this method
+            user.getTasks().remove(task);
+        }
     }
 
     /**
