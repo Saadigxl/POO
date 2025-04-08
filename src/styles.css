@@ -1,161 +1,157 @@
-/* Root background */
+
+
+/* Base Styles */
 .root {
-    -fx-background-color: #363636;
-    -fx-font-family: "Arial", sans-serif;
+    -fx-font-family: 'Inter', 'Helvetica', Arial, sans-serif;
+    -fx-font-smoothing-type: gray;
 }
 
-/* Labels */
-.label {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-}
-
-/* Input fields */
-.text-field, .combo-box, .date-picker {
-    -fx-background-color: #252525;
-    -fx-text-fill: white;
-    -fx-border-color: #3f3f3f;
-    -fx-border-radius: 6px;
-    -fx-padding: 8px;
-}
-
-/* Focus effect */
-.text-field:focused, .combo-box:focused, .date-picker:focused {
-    -fx-border-color: #646cff;
-    -fx-border-width: 2px;
-    -fx-effect: dropshadow(gaussian, rgba(100, 108, 255, 0.5), 10, 0, 0, 0);
-}
-
-/* Buttons */
-.button {
-    -fx-background-color: linear-gradient(to right, #2e2e2e, #1a1a1a);
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: bold;
-    -fx-border-radius: 10px;
-    -fx-padding: 12px 20px;
-    -fx-cursor: hand;
-    -fx-transition: all 0.3s ease-in-out;
-}
-
-/* Button Hover Effect */
-.button:hover {
-    -fx-background-color: linear-gradient(to right, #505050, #303030);
-    -fx-scale-x: 1.07;
-    -fx-scale-y: 1.07;
-}
-
-/* Disabled Buttons */
-.button:disabled {
-    -fx-background-color: #2a2a2a;
-    -fx-text-fill: #6a6a6a;
-    -fx-opacity: 0.5;
-}
-
-/* List View */
-.list-view {
-    -fx-background-color: #252525;
-    -fx-border-radius: 6px;
-    -fx-padding: 5px;
-}
-
-/* List Cell */
-.list-cell {
-    -fx-padding: 10px;
+/* Welcome Screen */
+.welcome-button {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: #4f46e5;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 32px;
+    -fx-border-color: #4f46e5;
+    -fx-border-width: 2px;
+    -fx-border-radius: 30px;
+    -fx-background-radius: 30px;
+    -fx-cursor: hand;
+    -fx-effect: none;
 }
 
-/* Hover and Selection Effects */
-.list-cell:hover {
-    -fx-background-color: #404040;
+.welcome-button:hover {
+    -fx-background-color: rgba(79, 70, 229, 0.1);
 }
-.list-cell:filled:selected {
-    -fx-background-color: #505050;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
+
+.welcome-button:pressed {
+    -fx-background-color: rgba(79, 70, 229, 0.2);
+}
+
+/* Task List */
+#minimal-task-list {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-padding: 0;
+}
+
+#minimal-task-list .list-cell {
+    -fx-background-color: white;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 20px;
+    -fx-text-fill: #1e293b;
+}
+
+#minimal-task-list .list-cell:filled:hover {
+    -fx-background-color: #f8fafc;
+}
+
+#minimal-task-list .list-cell:filled:selected {
+    -fx-background-color: #f1f5f9;
 }
 
 /* Scrollbar */
-.scroll-bar {
-    -fx-background-color: #1e1e1e;
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
     -fx-pref-width: 8px;
 }
-.scroll-bar .thumb {
-    -fx-background-color: #464646;
-    -fx-border-radius: 10px;
-}
-.scroll-bar .thumb:hover {
-    -fx-background-color: #646cff;
+
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
 }
 
-/* Checkboxes */
-.check-box {
-    -fx-text-fill: white;
-}
-.check-box .box {
-    -fx-background-color: #252525;
-    -fx-border-color: #3f3f3f;
-}
-.check-box:selected .mark {
-    -fx-background-color: #646cff;
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 4px;
 }
 
-/* Radio Buttons */
-.radio-button {
-    -fx-text-fill: white;
-}
-.radio-button .radio {
-    -fx-background-color: #252525;
-    -fx-border-color: #3f3f3f;
-}
-.radio-button:selected .dot {
-    -fx-background-color: #646cff;
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #94a3b8;
 }
 
-/* Commencer Button */
-#commencer-button {
-    -fx-background-color: linear-gradient(to right, #646cff, #7a7fff);
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 16px;
+/* Date Picker */
+.date-picker-popup {
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: white;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+}
+
+/* ComboBox Popup */
+.combo-box-popup {
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: white;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.combo-box-popup .list-cell {
+    -fx-padding: 10px 15px;
+    -fx-background-color: white;
+}
+
+.combo-box-popup .list-cell:filled:hover {
+    -fx-background-color: #f8fafc;
+}
+
+/* Priority Indicators */
+.high-priority {
+    -fx-text-fill: #dc2626;
     -fx-font-weight: bold;
-    -fx-padding: 12px 24px;
+}
+
+.medium-priority {
+    -fx-text-fill: #d97706;
+}
+
+.low-priority {
+    -fx-text-fill: #059669;
+}
+
+.completed-task {
+    -fx-text-fill: #94a3b8;
+    -fx-font-style: italic;
+}
+
+/* Status Badges */
+.status-badge {
+    -fx-padding: 4px 8px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
     -fx-border-radius: 12px;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(100, 108, 255, 0.6), 12, 0, 0, 0);
-    -fx-transition: all 0.3s ease-in-out;
+    -fx-background-radius: 12px;
 }
 
-/* Hover Effect */
-#commencer-button:hover {
-    -fx-background-color: linear-gradient(to right, #7a7fff, #929dff);
-    -fx-scale-x: 1.1;
-    -fx-scale-y: 1.1;
-    -fx-effect: dropshadow(gaussian, rgba(100, 108, 255, 0.8), 15, 0, 0, 0);
+.status-todo {
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #475569;
 }
 
-/* Click Effect */
-#commencer-button:pressed {
-    -fx-background-color: linear-gradient(to right, #5056d6, #646cff);
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
+.status-inprogress {
+    -fx-background-color: #bfdbfe;
+    -fx-text-fill: #1e40af;
 }
 
-/* University Label */
-#university-label {
-    -fx-font-size: 20px;
-    -fx-font-weight: bold; 
-    -fx-text-fill: white;
-    -fx-padding: 18px; 
-    -fx-background-color: purple; 
-    -fx-border-radius: 20px;
-}
-
-/* Team Names */
-#team-names {
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-padding: 10px;
+.status-done {
+    -fx-background-color: #d1fae5;
+    -fx-text-fill: #065f46;
 }

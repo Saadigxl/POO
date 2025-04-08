@@ -72,6 +72,11 @@ public class DatabasePersistence implements TaskPersistence {
     }
 
     @Override
+    public void deleteTask(Task task) {
+
+    }
+
+    @Override
     public List<Task> getAllTasks() {
         List<Task> tasks = new ArrayList<>();
         String sql = "SELECT * FROM tasks";
