@@ -10,7 +10,8 @@
             "name": "Launch App",
             "request": "launch",
             "mainClass": "view.MainView",
-            "vmArgs": "--module-path \"D:\\New folder (2)\\javafx-sdk-23.0.2\\lib\" --add-modules javafx.controls,javafx.fxml",
+            "vmArgs": "--module-path \"C:\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
+
         }
        
     ]

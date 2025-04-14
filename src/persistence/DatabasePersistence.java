@@ -9,7 +9,7 @@ import java.util.List;
 public class DatabasePersistence implements TaskPersistence {
     private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
     private static final String USER = "root"; // Change this if needed
-    private static final String PASSWORD = "RoHt9wD67"; // Change this if needed
+    private static final String PASSWORD = "2005"; // Change this if needed
 
     public DatabasePersistence() {
         try {
@@ -59,7 +59,7 @@ public class DatabasePersistence implements TaskPersistence {
     }
 
     @Override
-    public void removeTask(Task task) {
+    public void deleteTask(Task task) {
         String sql = "DELETE FROM tasks WHERE id=?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -69,11 +69,6 @@ public class DatabasePersistence implements TaskPersistence {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void deleteTask(Task task) {
-
     }
 
     @Override
