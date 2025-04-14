@@ -34,16 +34,6 @@ public class TaskController {
         taskPersistence.updateTask(task);
     }
 
-    /**
-     * Removes a task from the database.
-     */
-    public void removeTask(Task task) {
-        if (task == null) {
-            throw new IllegalArgumentException("Task cannot be null");
-        }
-        taskPersistence.removeTask(task);
-        user.getTasks().remove(task); // Remove from user task list
-    }
 
     /**
      * Deletes a task from the database and user's task list.
