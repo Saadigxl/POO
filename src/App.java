@@ -6,6 +6,3 @@ public class App {
         MainView.main(args);
     }
 }
-
-    
-
