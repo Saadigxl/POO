@@ -146,6 +146,7 @@ public class MainView extends Application {
 
         // Task list section
         VBox listSection = new VBox(20);
+        listSection.setPrefWidth(500);
 
         Label listTitle = new Label("Your Tasks");
         listTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
