@@ -1,7 +1,30 @@
-
-
-/* Base Styles */
+/* Variables de couleurs */
 .root {
+    /* Couleurs primaires */
+    -primary-color: #4f46e5;
+    -primary-light: rgba(79, 70, 229, 0.1);
+    -primary-medium: rgba(79, 70, 229, 0.2);
+    
+    /* Couleurs neutres */
+    -neutral-50: #f8fafc;
+    -neutral-100: #f1f5f9;
+    -neutral-200: #e2e8f0;
+    -neutral-300: #cbd5e1;
+    -neutral-400: #94a3b8;
+    -neutral-500: #64748b;
+    -neutral-600: #475569;
+    -neutral-700: #334155;
+    -neutral-800: #1e293b;
+    
+    /* Couleurs d'état */
+    -success: #059669;
+    -success-light: #d1fae5;
+    -warning: #d97706;
+    -error: #dc2626;
+    -info: #1e40af;
+    -info-light: #bfdbfe;
+    
+    /* Police */
     -fx-font-family: 'Inter', 'Helvetica', Arial, sans-serif;
     -fx-font-smoothing-type: gray;
 }
@@ -9,30 +32,31 @@
 /* Welcome Screen */
 .welcome-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #4f46e5;
+    -fx-text-fill: -primary-color;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-padding: 12px 32px;
-    -fx-border-color: #4f46e5;
+    -fx-border-color: -primary-color;
     -fx-border-width: 2px;
     -fx-border-radius: 30px;
     -fx-background-radius: 30px;
     -fx-cursor: hand;
     -fx-effect: none;
+    -fx-transition: background-color 0.2s ease;
 }
 
 .welcome-button:hover {
-    -fx-background-color: rgba(79, 70, 229, 0.1);
+    -fx-background-color: -primary-light;
 }
 
 .welcome-button:pressed {
-    -fx-background-color: rgba(79, 70, 229, 0.2);
+    -fx-background-color: -primary-medium;
 }
 
 /* Task List */
 #minimal-task-list {
     -fx-background-color: transparent;
-    -fx-border-color: #e2e8f0;
+    -fx-border-color: -neutral-200;
     -fx-border-width: 1px;
     -fx-border-radius: 8px;
     -fx-padding: 0;
@@ -40,18 +64,19 @@
 
 #minimal-task-list .list-cell {
     -fx-background-color: white;
-    -fx-border-color: #e2e8f0;
+    -fx-border-color: -neutral-200;
     -fx-border-width: 0 0 1px 0;
     -fx-padding: 20px;
-    -fx-text-fill: #1e293b;
+    -fx-text-fill: -neutral-800;
+    -fx-transition: background-color 0.15s ease;
 }
 
 #minimal-task-list .list-cell:filled:hover {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: -neutral-50;
 }
 
 #minimal-task-list .list-cell:filled:selected {
-    -fx-background-color: #f1f5f9;
+    -fx-background-color: -neutral-100;
 }
 
 /* Scrollbar */
@@ -65,17 +90,18 @@
 }
 
 .scroll-bar:vertical .thumb {
-    -fx-background-color: #cbd5e1;
+    -fx-background-color: -neutral-300;
     -fx-background-radius: 4px;
+    -fx-transition: background-color 0.15s ease;
 }
 
 .scroll-bar:vertical .thumb:hover {
-    -fx-background-color: #94a3b8;
+    -fx-background-color: -neutral-400;
 }
 
 /* Date Picker */
 .date-picker-popup {
-    -fx-border-color: #e2e8f0;
+    -fx-border-color: -neutral-200;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
@@ -92,7 +118,7 @@
 
 /* ComboBox Popup */
 .combo-box-popup {
-    -fx-border-color: #e2e8f0;
+    -fx-border-color: -neutral-200;
     -fx-border-radius: 8px;
     -fx-background-radius: 8px;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
@@ -107,28 +133,29 @@
 .combo-box-popup .list-cell {
     -fx-padding: 10px 15px;
     -fx-background-color: white;
+    -fx-transition: background-color 0.15s ease;
 }
 
 .combo-box-popup .list-cell:filled:hover {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: -neutral-50;
 }
 
 /* Priority Indicators */
 .high-priority {
-    -fx-text-fill: #dc2626;
+    -fx-text-fill: -error;
     -fx-font-weight: bold;
 }
 
 .medium-priority {
-    -fx-text-fill: #d97706;
+    -fx-text-fill: -warning;
 }
 
 .low-priority {
-    -fx-text-fill: #059669;
+    -fx-text-fill: -success;
 }
 
 .completed-task {
-    -fx-text-fill: #94a3b8;
+    -fx-text-fill: -neutral-400;
     -fx-font-style: italic;
 }
 
@@ -142,16 +169,30 @@
 }
 
 .status-todo {
-    -fx-background-color: #e2e8f0;
-    -fx-text-fill: #475569;
+    -fx-background-color: -neutral-200;
+    -fx-text-fill: -neutral-600;
 }
 
 .status-inprogress {
-    -fx-background-color: #bfdbfe;
-    -fx-text-fill: #1e40af;
+    -fx-background-color: -info-light;
+    -fx-text-fill: -info;
 }
 
 .status-done {
-    -fx-background-color: #d1fae5;
-    -fx-text-fill: #065f46;
+    -fx-background-color: -success-light;
+    -fx-text-fill: -success;
+}
+.task-card-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5 0 5 0;
+}
+
+.task-card-list .list-cell:selected {
+    -fx-background-color: transparent;
+}
+
+.invisible-tab-header .tab-header-area {
+    visibility: hidden;
+    -fx-padding: 0;
+    -fx-pref-height: 0;
 }
