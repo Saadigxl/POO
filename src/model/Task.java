@@ -2,6 +2,8 @@ package model;
 
 import java.time.LocalDate;
 
+import javafx.scene.control.Button;
+
 public class Task {
     private int id;
     private String title;
@@ -82,5 +84,43 @@ public class Task {
     @Override
     public String toString() {
         return title + " (" + status + ")";
+    }
+
+    public void styleActionButton(Button button, String bgColor, String textColor) {
+        button.setStyle(
+            "-fx-background-color: " + bgColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-font-size: 14px;" +
+            "-fx-min-width: 32px;" +
+            "-fx-min-height: 32px;" +
+            "-fx-background-radius: 16px;" +
+            "-fx-padding: 0;"
+        );
+        
+        // Hover effect
+        button.setOnMouseEntered(e -> {
+            button.setStyle(
+                "-fx-background-color: " + textColor + ";" +
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 14px;" +
+                "-fx-min-width: 32px;" +
+                "-fx-min-height: 32px;" +
+                "-fx-background-radius: 16px;" +
+                "-fx-padding: 0;" +
+                "-fx-cursor: hand;"
+            );
+        });
+        
+        button.setOnMouseExited(e -> {
+            button.setStyle(
+                "-fx-background-color: " + bgColor + ";" +
+                "-fx-text-fill: " + textColor + ";" +
+                "-fx-font-size: 14px;" +
+                "-fx-min-width: 32px;" +
+                "-fx-min-height: 32px;" +
+                "-fx-background-radius: 16px;" +
+                "-fx-padding: 0;"
+            );
+        });
     }
 }

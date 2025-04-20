@@ -7,6 +7,8 @@ import java.util.Map;
 
 import controller.TaskController;
 import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
@@ -128,41 +130,119 @@ public class MainView extends Application {
     }
 
     private void showWelcomeScreen(Stage primaryStage) {
-        StackPane welcomeRoot = new StackPane();
-        welcomeRoot.setStyle("-fx-background-color: #f5f7fa;");
-
+        BorderPane welcomeRoot = new BorderPane();
+        welcomeRoot.setStyle("-fx-background-color: linear-gradient(to bottom right, #f8fafc, #e0e7ff);");
+    
+        // Create main content container with vertical spacing
         VBox contentBox = new VBox(30);
         contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(50));
-
-        // Modern logo/symbol and title in one row
-        HBox titleBox = new HBox(10);
-        titleBox.setAlignment(Pos.CENTER);
-
-        Label logo = new Label("✓");
-        logo.setStyle("-fx-font-size: 36px; -fx-text-fill: #4f46e5;");
-
+        contentBox.setPadding(new Insets(60, 50, 60, 50));
+        contentBox.setMaxWidth(600);
+    
+        // Branding section with animated logo
+        StackPane logoContainer = new StackPane();
+        logoContainer.setPadding(new Insets(0, 0, 20, 0));
+        
+        Circle logoCircle = new Circle(50);
+        logoCircle.setFill(Color.web("#4f46e5"));
+        logoCircle.setOpacity(0.9);
+        
+        Label logoSymbol = new Label("✓");
+        logoSymbol.setStyle("-fx-font-size: 52px; -fx-text-fill: white; -fx-font-weight: bold;");
+        
+        logoContainer.getChildren().addAll(logoCircle, logoSymbol);
+        
+        // Rotate animation for the logo
+        RotateTransition rotateTransition = new RotateTransition(Duration.seconds(3), logoCircle);
+        rotateTransition.setByAngle(360);
+        rotateTransition.setCycleCount(1);
+        rotateTransition.setInterpolator(Interpolator.EASE_BOTH);
+        rotateTransition.play();
+    
+        // Title and tagline with modern typography
         Label welcomeLabel = new Label("TaskFlow");
-        welcomeLabel.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-
-        titleBox.getChildren().addAll(logo, welcomeLabel);
-
-        Label subtitle = new Label("Organize your work effortlessly");
-        subtitle.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b;");
-
-        Button startButton = new Button("Begin");
+        welcomeLabel.setStyle("-fx-font-size: 48px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        
+        Label subtitle = new Label("Organize your tasks. Boost your productivity.");
+        subtitle.setStyle("-fx-font-size: 18px; -fx-text-fill: #64748b; -fx-font-weight: normal;");
+    
+        // Feature highlights section
+        HBox featureBox = new HBox(40);
+        featureBox.setAlignment(Pos.CENTER);
+        featureBox.setPadding(new Insets(30, 0, 40, 0));
+        
+        // Feature 1: Track Tasks
+        VBox feature1 = createFeatureBox("✓", "Track Tasks", "Organize and manage all your tasks in one place");
+        
+        // Feature 2: Set Priorities
+        VBox feature2 = createFeatureBox("⚡", "Set Priorities", "Prioritize tasks and focus on what's important");
+        
+        // Feature 3: Monitor Progress
+        VBox feature3 = createFeatureBox("📊", "Monitor Progress", "Track your productivity and task completion rate");
+        
+        featureBox.getChildren().addAll(feature1, feature2, feature3);
+    
+        // Start button with hover effects
+        Button startButton = new Button("Get Started");
         startButton.getStyleClass().add("welcome-button");
+        startButton.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-size: 16px; " +
+                            "-fx-padding: 12px 30px; -fx-background-radius: 30px; -fx-cursor: hand; " +
+                            "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.3), 10, 0, 0, 4);");
+        
+        // Hover effects
+        startButton.setOnMouseEntered(e -> 
+            startButton.setStyle("-fx-background-color: #4338ca; -fx-text-fill: white; -fx-font-size: 16px; " +
+                               "-fx-padding: 12px 30px; -fx-background-radius: 30px; -fx-cursor: hand; " +
+                               "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.4), 12, 0, 0, 6);")
+        );
+        
+        startButton.setOnMouseExited(e -> 
+            startButton.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-size: 16px; " +
+                               "-fx-padding: 12px 30px; -fx-background-radius: 30px; -fx-cursor: hand; " +
+                               "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.3), 10, 0, 0, 4);")
+        );
+        
         startButton.setOnAction(e -> fadeTransition(contentBox, () -> showMainView(primaryStage)));
-
-        contentBox.getChildren().addAll(titleBox, subtitle, startButton);
-        welcomeRoot.getChildren().add(contentBox);
-
-        Scene welcomeScene = new Scene(welcomeRoot, 800, 600);
-        primaryStage.setScene(welcomeScene);
-        primaryStage.setTitle("TaskFlow");
+    
+        // Footer with version info
+        Label versionLabel = new Label("v1.0 • Modern Task Management");
+        versionLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-padding: 20 0 0 0;");
+        
+        // Add all elements to content box
+        contentBox.getChildren().addAll(logoContainer, welcomeLabel, subtitle, featureBox, startButton, versionLabel);
+        
+        // Center the content in welcome screen
+        welcomeRoot.setCenter(contentBox);
+    
+        Scene welcomeScene = new Scene(welcomeRoot, 900, 700);
         welcomeScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(welcomeScene);
+        primaryStage.setTitle("Welcome to TaskFlow");
         primaryStage.show();
+        
+        // Add a gentle fade-in animation for the whole scene
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(800), welcomeRoot);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
+    }
+    private VBox createFeatureBox(String icon, String title, String description) {
+        VBox featureBox = new VBox(10);
+        featureBox.setAlignment(Pos.TOP_CENTER);
+        featureBox.setPrefWidth(180);
+        
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: #4f46e5;");
+        
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+        
+        Label descLabel = new Label(description);
+        descLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b; -fx-wrap-text: true; -fx-text-alignment: center;");
+        descLabel.setWrapText(true);
+        
+        featureBox.getChildren().addAll(iconLabel, titleLabel, descLabel);
+        return featureBox;
     }
 
     private void showMainView(Stage primaryStage) {
@@ -264,7 +344,7 @@ public class MainView extends Application {
         userProfile.setPadding(new Insets(0, 0, 20, 0));
         
         Circle userAvatar = new Circle(20, Color.web("#4f46e5"));
-        Label userName = new Label("Abdel Raouf");
+        Label userName = new Label(" Raouf");
         userName.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
         
         userProfile.getChildren().addAll(userAvatar, userName);
@@ -435,6 +515,7 @@ private VBox createTaskViewSection() {
     taskListView = new ListView<>(taskList);
     taskListView.setId("card-task-list");
     taskListView.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 10;");
+    
     
     // Custom cell factory for card-style tasks
     taskListView.setCellFactory(lv -> new ListCell<Task>() {
@@ -931,13 +1012,12 @@ private VBox createTaskViewSection() {
                         slideAnimation.play();
                     } else {
                         slideAnimation.playFromStart();
->>>>>>> 06ef759b5ec2e4a8a3bdbc1bb9cb16bc6e7df296
+
                     }
                 }
                 
                 selectedTask = task;
             }
-            
             private void hideDetailsWithAnimation() {
                 if (detailsSection != null && mainContentArea.getChildren().contains(detailsSection)) {
                     // Start slide-out animation
