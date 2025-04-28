@@ -9,7 +9,7 @@ import java.util.List;
 public class DatabasePersistence implements TaskPersistence {
     private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
     private static final String USER = "root"; // Change this if needed
-    private static final String PASSWORD = "2005"; // Change this if needed
+    private static final String PASSWORD = "root"; // Change this if needed
 
     public DatabasePersistence() {
         try {

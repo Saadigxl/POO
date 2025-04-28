@@ -7,7 +7,7 @@
             "request": "launch",
             "mainClass": "view.SignInView",
             "projectName": "POO_45416a11",
-            "vmArgs": "--module-path \"C:\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path \"C:\\Users\\Informatics\\Downloads\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
         },
         {
             "type": "java",
@@ -15,7 +15,7 @@
             "request": "launch",
             "mainClass": "view.MainView",
             "projectName": "POO_45416a11",
-            "vmArgs": "--module-path \"C:\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path \"C:\\Users\\Informatics\\Downloads\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
         },
         {
             "type": "java",
@@ -23,7 +23,7 @@
             "request": "launch",
             "mainClass": "App",
             "projectName": "POO_45416a11",
-            "vmArgs": "--module-path \"C:\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
+            "vmArgs": "--module-path \"C:\\Users\\Informatics\\Downloads\\javafx-sdk-24\\lib\" --add-modules javafx.controls,javafx.fxml"
         }
     ]
 }
