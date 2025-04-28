@@ -378,6 +378,7 @@ public class MainView extends Application {
         
         addTaskBtn.setOnAction(e -> {
             showAddTaskDialog(primaryStage);
+            setActiveButton(addTaskBtn, viewTasksBtn, priorityDashboardBtn);
         });
         
         navItems.getChildren().addAll(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
@@ -458,26 +459,33 @@ public class MainView extends Application {
         button.setPrefWidth(190);
         button.setPadding(new Insets(12, 15, 12, 15));
         button.setAlignment(Pos.CENTER_LEFT);
-        
+
+        // Helper to check if button is active by its style
+        Runnable setActiveStyle = () -> button.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
+        Runnable setInactiveStyle = () -> button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+
         if (isActive) {
-            button.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
+            setActiveStyle.run();
         } else {
-            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+            setInactiveStyle.run();
         }
-        
-        // Hover effects
+
         button.setOnMouseEntered(e -> {
-            if (!isActive) {
+            // Only apply hover if not active
+            if (!button.getStyle().contains("#e0e7ff")) {
                 button.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 6px;");
             }
         });
-        
+
         button.setOnMouseExited(e -> {
-            if (!isActive) {
-                button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+            // Restore active/inactive style
+            if (button.getStyle().contains("#e0e7ff")) {
+                setActiveStyle.run();
+            } else {
+                setInactiveStyle.run();
             }
         });
-        
+
         return button;
     }
     
@@ -721,6 +729,9 @@ private VBox createTaskViewSection() {
 }
     
     private VBox createPriorityDashboard() {
+        // Ensure priorityCounts is up to date for the current user's tasks
+        updatePriorityCounts();
+
         VBox dashboard = new VBox(30);
         dashboard.setPadding(new Insets(20));
         dashboard.setStyle("-fx-background-color: #f8fafc;");
@@ -735,11 +746,20 @@ private VBox createTaskViewSection() {
         
         Label chartTitle = new Label("Task Distribution by Priority");
         chartTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-        
-        // Create pie chart
-        PieChart priorityChart = createPriorityPieChart();
-        
-        chartSection.getChildren().addAll(chartTitle, priorityChart);
+
+        // Check if there is any data to show
+        int total = priorityCounts.getOrDefault("High", 0)
+                  + priorityCounts.getOrDefault("Medium", 0)
+                  + priorityCounts.getOrDefault("Low", 0);
+
+        if (total > 0) {
+            PieChart priorityChart = createPriorityPieChart();
+            chartSection.getChildren().addAll(chartTitle, priorityChart);
+        } else {
+            Label noDataLabel = new Label("No tasks to display.");
+            noDataLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b; -fx-padding: 40 0 40 0;");
+            chartSection.getChildren().addAll(chartTitle, noDataLabel);
+        }
         
         // Priority task sections
         HBox prioritySections = new HBox(20);
@@ -761,24 +781,28 @@ private VBox createTaskViewSection() {
     }
     
     private PieChart createPriorityPieChart() {
-        // Create data for the chart
         ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
             new PieChart.Data("High", priorityCounts.getOrDefault("High", 0)),
             new PieChart.Data("Medium", priorityCounts.getOrDefault("Medium", 0)),
             new PieChart.Data("Low", priorityCounts.getOrDefault("Low", 0))
         );
-        
+
         PieChart chart = new PieChart(pieChartData);
         chart.setTitle("Tasks by Priority");
         chart.setLabelsVisible(true);
         chart.setLegendVisible(true);
         chart.setStartAngle(90);
-        
-        // Apply colors
-        pieChartData.get(0).getNode().setStyle("-fx-pie-color: #ef4444;");
-        pieChartData.get(1).getNode().setStyle("-fx-pie-color: #f59e0b;");
-        pieChartData.get(2).getNode().setStyle("-fx-pie-color: #10b981;");
-        
+
+        // Set colors after the chart is rendered
+        javafx.application.Platform.runLater(() -> {
+            if (pieChartData.size() > 0 && pieChartData.get(0).getNode() != null)
+                pieChartData.get(0).getNode().setStyle("-fx-pie-color: #ef4444;");
+            if (pieChartData.size() > 1 && pieChartData.get(1).getNode() != null)
+                pieChartData.get(1).getNode().setStyle("-fx-pie-color: #f59e0b;");
+            if (pieChartData.size() > 2 && pieChartData.get(2).getNode() != null)
+                pieChartData.get(2).getNode().setStyle("-fx-pie-color: #10b981;");
+        });
+
         return chart;
     }
     
@@ -786,36 +810,43 @@ private VBox createTaskViewSection() {
         VBox section = new VBox(15);
         section.setPrefWidth(300);
         section.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12px; -fx-padding: 20;");
-        
+
         // Section header with count
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        
+
         Circle priorityDot = new Circle(8, Color.web(color));
-        
+
         Label priorityLabel = new Label(priority);
         priorityLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-        
-        Label countLabel = new Label(String.valueOf(priorityCounts.getOrDefault(priority.split(" ")[0], 0)));
+
+        // Filter tasks by exact priority
+        String priorityKey = priority.replace(" Priority", "");
+        int count = 0;
+        for (Task task : taskList) {
+            if (task.getPriority().equalsIgnoreCase(priorityKey)) {
+                count++;
+            }
+        }
+
+        Label countLabel = new Label(String.valueOf(count));
         countLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
-        
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        
+
         header.getChildren().addAll(priorityDot, priorityLabel, spacer, countLabel);
-        
+
         // Task list for this priority
         VBox tasksList = new VBox(10);
-        
-        // Get tasks with this priority
-        String priorityKey = priority.split(" ")[0]; // Extract "High", "Medium", or "Low"
+
         for (Task task : taskList) {
-            if (task.getPriority().equals(priorityKey)) {
+            if (task.getPriority().equalsIgnoreCase(priorityKey)) {
                 HBox taskItem = new HBox(10);
                 taskItem.setAlignment(Pos.CENTER_LEFT);
                 taskItem.setPadding(new Insets(8));
                 taskItem.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 6px;");
-                
+
                 // Status indicator
                 Circle statusDot = new Circle(6);
                 switch (task.getStatus()) {
@@ -831,22 +862,22 @@ private VBox createTaskViewSection() {
                     default:
                         statusDot.setFill(Color.web("#cbd5e1"));
                 }
-                
+
                 Label taskTitle = new Label(task.getTitle());
                 taskTitle.setStyle("-fx-font-size: 14px;");
-                
+
                 taskItem.getChildren().addAll(statusDot, taskTitle);
                 tasksList.getChildren().add(taskItem);
             }
         }
-        
+
         // If no tasks, show message
         if (tasksList.getChildren().isEmpty()) {
-            Label noTasksLabel = new Label("No " + priority.toLowerCase() + " tasks");
+            Label noTasksLabel = new Label("No " + priorityKey.toLowerCase() + " priority tasks");
             noTasksLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #64748b;");
             tasksList.getChildren().add(noTasksLabel);
         }
-        
+
         section.getChildren().addAll(header, tasksList);
         return section;
     }
