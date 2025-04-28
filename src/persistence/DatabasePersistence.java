@@ -21,17 +21,16 @@ public class DatabasePersistence implements TaskPersistence {
 
     @Override
     public void addTask(Task task) {
-        String sql = "INSERT INTO tasks (title, description, due_date, priority, category, status) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks (title, description, due_date, priority, category, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
-            stmt.setDate(3, Date.valueOf(task.getDueDate()));
+            stmt.setDate(3, java.sql.Date.valueOf(task.getDueDate()));
             stmt.setString(4, task.getPriority());
             stmt.setString(5, task.getCategory());
             stmt.setString(6, task.getStatus());
-
+            stmt.setInt(7, task.getUserId());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -72,30 +71,29 @@ public class DatabasePersistence implements TaskPersistence {
     }
 
     @Override
-    public List<Task> getAllTasks() {
+    public List<Task> getAllTasks(int userId) {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks";
-
+        String sql = "SELECT * FROM tasks WHERE user_id = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Task task = new Task(
-                        rs.getInt("id"),
-                        rs.getString("title"),
-                        rs.getString("description"),
-                        rs.getDate("due_date").toLocalDate(),
-                        rs.getString("priority"),
-                        rs.getString("category"),
-                        rs.getString("status")
+                    rs.getInt("id"),
+                    rs.getString("title"),
+                    rs.getString("description"),
+                    rs.getDate("due_date").toLocalDate(),
+                    rs.getString("priority"),
+                    rs.getString("category"),
+                    rs.getString("status"),
+                    rs.getInt("user_id")
                 );
                 tasks.add(task);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return tasks;
     }
 }

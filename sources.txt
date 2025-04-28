@@ -1,0 +1,11 @@
+C:\Users\noufe\Downloads\POO\src\App.java
+C:\Users\noufe\Downloads\POO\src\controller\TaskController.java
+C:\Users\noufe\Downloads\POO\src\model\Task.java
+C:\Users\noufe\Downloads\POO\src\model\User.java
+C:\Users\noufe\Downloads\POO\src\persistence\DatabasePersistence.java
+C:\Users\noufe\Downloads\POO\src\persistence\TaskPersistence.java
+C:\Users\noufe\Downloads\POO\src\persistence\UserPersistence.java
+C:\Users\noufe\Downloads\POO\src\utils\DatabaseConnection.java
+C:\Users\noufe\Downloads\POO\src\view\MainView.java
+C:\Users\noufe\Downloads\POO\src\view\SignInView.java
+C:\Users\noufe\Downloads\POO\src\view\SignUpView.java

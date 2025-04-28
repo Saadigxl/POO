@@ -1,8 +1,8 @@
 import javafx.application.Application;
-import view.MainView;
+import view.SignInView;
 
 public class App {
     public static void main(String[] args) {
-        MainView.main(args);
+        Application.launch(SignInView.class, args);
     }
 }

@@ -75,6 +75,11 @@ public class MainView extends Application {
     private Map<String, Integer> statusCounts = new HashMap<>();
     private Map<String, Integer> priorityCounts = new HashMap<>();
     private TabPane contentTabPane;
+    private model.User user;
+
+    public void setUser(model.User user) {
+        this.user = user;
+    }
 
     public static void main(String[] args) {
         launch(args);
@@ -246,30 +251,29 @@ public class MainView extends Application {
     }
 
     private void showMainView(Stage primaryStage) {
-        User user = new User("JohnDoe");
+        if (user == null) {
+            // Should not happen, but fallback
+            return;
+        }
         taskController = new TaskController(user, new DatabasePersistence());
         taskList = FXCollections.observableArrayList();
-        // Load tasks in reverse order initially
-        List<Task> tasks = taskController.getAllTasks();
+        // Load only tasks for this user
+        List<Task> tasks = taskController.getAllTasks(user.getId());
         Collections.reverse(tasks);
         taskList.addAll(tasks);
-        
-        // Calculate initial status counts
-        updateStatusCounts();
-        updatePriorityCounts();
 
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #ffffff;");
 
         // Header with counter indicators
         HBox header = createHeader();
-        
+
         // Sidebar
         VBox sidebar = createSidebar(primaryStage);
-        
+
         // Main content area with tabs
         createMainContentArea();
-        
+
         root.setTop(header);
         root.setLeft(sidebar);
         root.setCenter(mainContentArea);
@@ -277,6 +281,10 @@ public class MainView extends Application {
         Scene mainScene = new Scene(root, 1200, 800);
         mainScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         primaryStage.setScene(mainScene);
+
+        // Ensure counters are updated after UI is built and tasks are loaded
+        updateStatusCounts();
+        updatePriorityCounts();
     }
     
     private HBox createHeader() {
@@ -344,7 +352,7 @@ public class MainView extends Application {
         userProfile.setPadding(new Insets(0, 0, 20, 0));
         
         Circle userAvatar = new Circle(20, Color.web("#4f46e5"));
-        Label userName = new Label(" Raouf");
+        Label userName = new Label(" " + (user != null ? user.getUsername() : ""));
         userName.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
         
         userProfile.getChildren().addAll(userAvatar, userName);
@@ -875,10 +883,17 @@ private VBox createTaskViewSection() {
         cancelButton.setOnAction(e -> dialog.close());
         saveButton.setOnAction(e -> {
             if (validateFields(titleField, descriptionField, dueDatePicker, priorityComboBox, categoryField, statusComboBox)) {
-                Task newTask = new Task(0, titleField.getText(), descriptionField.getText(), dueDatePicker.getValue(),
-                        priorityComboBox.getValue(), categoryField.getText(), statusComboBox.getValue());
-                taskController.addTask(newTask.getTitle(), newTask.getDescription(), newTask.getDueDate(),
-                        newTask.getPriority(), newTask.getCategory(), newTask.getStatus());
+                Task newTask = new Task(
+                    0,
+                    titleField.getText(),
+                    descriptionField.getText(),
+                    dueDatePicker.getValue(),
+                    priorityComboBox.getValue(),
+                    categoryField.getText(),
+                    statusComboBox.getValue(),
+                    user.getId() // <-- Set the userId here!
+                );
+                taskController.addTask(newTask);
                 taskList.add(0, newTask);
                 updateStatusCounts();
                 updatePriorityCounts();
@@ -996,38 +1011,49 @@ private VBox createTaskViewSection() {
                 if (detailsSection == null) {
                     createDetailsSection();
                 }
-                
+
                 // Set the task data in the details section
                 updateDetailsSection(task);
-                
+
                 // Add the details section to mainContentArea if it's not already there
                 if (!mainContentArea.getChildren().contains(detailsSection)) {
+                    detailsSection.setOpacity(0);
+                    detailsSection.setTranslateX(60); // Start slightly off-screen
                     mainContentArea.getChildren().add(detailsSection);
-                    
-                    // Start slide-in animation
-                    if (slideAnimation == null) {
-                        slideAnimation = new TranslateTransition(Duration.millis(300), detailsSection);
-                        slideAnimation.setFromX(detailsSection.getWidth());
-                        slideAnimation.setToX(0);
-                        slideAnimation.play();
-                    } else {
-                        slideAnimation.playFromStart();
 
-                    }
+                    // Slide-in and fade-in animation
+                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(350), detailsSection);
+                    slideIn.setFromX(60);
+                    slideIn.setToX(0);
+                    slideIn.setInterpolator(Interpolator.EASE_OUT);
+
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(350), detailsSection);
+                    fadeIn.setFromValue(0);
+                    fadeIn.setToValue(1);
+
+                    slideIn.play();
+                    fadeIn.play();
                 }
-                
                 selectedTask = task;
             }
+
             private void hideDetailsWithAnimation() {
                 if (detailsSection != null && mainContentArea.getChildren().contains(detailsSection)) {
-                    // Start slide-out animation
-                    TranslateTransition slideOut = new TranslateTransition(Duration.millis(300), detailsSection);
+                    // Slide-out and fade-out animation
+                    TranslateTransition slideOut = new TranslateTransition(Duration.millis(250), detailsSection);
                     slideOut.setFromX(0);
-                    slideOut.setToX(detailsSection.getWidth());
-                    slideOut.setOnFinished(e -> mainContentArea.getChildren().remove(detailsSection));
+                    slideOut.setToX(60);
+                    slideOut.setInterpolator(Interpolator.EASE_IN);
+
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(250), detailsSection);
+                    fadeOut.setFromValue(1);
+                    fadeOut.setToValue(0);
+
                     slideOut.play();
+                    fadeOut.play();
+
+                    fadeOut.setOnFinished(e -> mainContentArea.getChildren().remove(detailsSection));
                 }
-                
                 selectedTask = null;
             }
             
