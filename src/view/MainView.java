@@ -345,7 +345,7 @@ public class MainView extends Application {
         sidebar.setMinWidth(220);
         sidebar.setPadding(new Insets(20, 15, 20, 15));
         sidebar.setStyle("-fx-background-color: #f1f5f9;");
-        
+
         // User profile section
         HBox userProfile = new HBox(10);
         userProfile.setAlignment(Pos.CENTER_LEFT);
@@ -395,6 +395,28 @@ public class MainView extends Application {
         statusSummary.getChildren().addAll(summaryTitle, statusChart);
         
         sidebar.getChildren().addAll(userProfile, navItems, statusSummary);
+
+        // Spacer to push logout button to the bottom
+        Region sidebarSpacer = new Region();
+        VBox.setVgrow(sidebarSpacer, Priority.ALWAYS);
+        sidebar.getChildren().add(sidebarSpacer);
+
+        // Log Out button
+        Button logoutButton = new Button("Log Out");
+        logoutButton.setPrefWidth(190);
+        logoutButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 15px; -fx-background-radius: 6px;");
+        logoutButton.setOnMouseEntered(e -> logoutButton.setStyle("-fx-background-color: #b91c1c; -fx-text-fill: white; -fx-font-size: 15px; -fx-background-radius: 6px;"));
+        logoutButton.setOnMouseExited(e -> logoutButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-size: 15px; -fx-background-radius: 6px;"));
+
+        logoutButton.setOnAction(e -> {
+            // Go back to sign-in window
+            Stage stage = (Stage) sidebar.getScene().getWindow();
+            stage.close();
+            showSignInWindow(new Stage());
+        });
+
+        sidebar.getChildren().add(logoutButton);
+
         return sidebar;
     }
     
@@ -1385,4 +1407,13 @@ private VBox createTaskViewSection() {
                 fade.setOnFinished(e -> onFinished.run());
                 fade.play();
             }
-        }
+        private void showSignInWindow(Stage stage) {
+    // Replace 'SignInView' with your actual login window class
+    try {
+        SignInView signInView = new SignInView();
+        signInView.start(stage);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+}
