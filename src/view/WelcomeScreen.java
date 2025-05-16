@@ -9,6 +9,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -90,6 +91,7 @@ public class WelcomeScreen extends Application {
 
         Scene welcomeScene = new Scene(welcomeRoot, 900, 700);
         welcomeScene.getStylesheets().add(WelcomeScreen.class.getResource("/styles.css").toExternalForm());
+        primaryStage.getIcons().add(new Image("/icon.png"));
         primaryStage.setScene(welcomeScene);
         primaryStage.setTitle("Welcome to TaskFlow");
         primaryStage.show();

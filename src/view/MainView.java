@@ -1,15 +1,12 @@
 package view;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.scene.control.ScrollPane;
 import controller.TaskController;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
-import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
@@ -29,13 +26,11 @@ import javafx.scene.control.Separator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -43,14 +38,12 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Task;
-import model.User;
 import persistence.DatabasePersistence;
 
 public class MainView extends Application {
     private TaskController taskController;
     private ObservableList<Task> taskList;
     private ListView<Task> taskListView;
-    private StackPane rootStack;
     private VBox detailsSection;
     private VBox mainContentArea;
     private Timeline resizeAnimation;
@@ -62,7 +55,6 @@ public class MainView extends Application {
         this.resizeAnimation = resizeAnimation;
     }
 
-    private TranslateTransition slideAnimation;
     private Task currentlyDisplayedTask;
     private Task selectedTask;
     public Task getSelectedTask() {
@@ -142,7 +134,7 @@ public class MainView extends Application {
         // Ensure counters are updated after UI is built and tasks are loaded
         updateStatusCounts();
         updatePriorityCounts();
-        updateNotifications(); // <-- Add this line
+        updateNotifications(); 
     }
     
     private HBox createHeader() {
@@ -276,7 +268,18 @@ public class MainView extends Application {
             showSignInWindow(new Stage());
         });
 
-        sidebar.getChildren().addAll(userProfile, navItems, statusSummary, notificationBox, logoutButton);
+        // Add a spacer region before the logout button
+        Region sidebarSpacer = new Region();
+        VBox.setVgrow(sidebarSpacer, Priority.ALWAYS);
+
+        sidebar.getChildren().addAll(
+            userProfile,
+            navItems,
+            statusSummary,
+            notificationBox,
+            sidebarSpacer,      // <-- This pushes the logout button to the bottom
+            logoutButton
+        );
 
         return sidebar;
     }
@@ -661,7 +664,22 @@ private VBox createTaskCard(Task task) {
     actionButtons.setAlignment(Pos.CENTER_RIGHT);
     actionButtons.setMinHeight(40); // Ensures consistent height for all cards
 
-    if ("To Do".equals(task.getStatus())) {
+    LocalDate now = LocalDate.now();
+    boolean isOutdated = task.getDueDate() != null && task.getDueDate().isBefore(now);
+
+    if (isOutdated && !"Done".equals(task.getStatus())) {
+        // Show "Outdated" label if due date is in the past and not done
+        Label outdatedLabel = new Label("Outdated");
+        outdatedLabel.setStyle(
+            "-fx-background-color: #fee2e2; " +
+            "-fx-text-fill: #b91c1c; " +
+            "-fx-font-size: 15px; " +
+            "-fx-font-weight: bold; " +
+            "-fx-background-radius: 8px; " +
+            "-fx-padding: 10px 24px;"
+        );
+        actionButtons.getChildren().add(outdatedLabel);
+    } else if ("To Do".equals(task.getStatus())) {
         Button startButton = new Button("Start");
         startButton.setStyle(
             "-fx-background-color: #f59e0b; " +
@@ -679,6 +697,7 @@ private VBox createTaskCard(Task task) {
             if (idx >= 0) taskList.set(idx, task);
             updateStatusCounts();
             updatePriorityCounts();
+            updateNotifications();
             contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
             taskListView.refresh();
         });
@@ -701,6 +720,7 @@ private VBox createTaskCard(Task task) {
             if (idx >= 0) taskList.set(idx, task);
             updateStatusCounts();
             updatePriorityCounts();
+            updateNotifications();
             contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
             taskListView.refresh();
         });
@@ -961,7 +981,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
                 taskList.add(0, newTask);
                 updateStatusCounts();
                 updatePriorityCounts();
-                
+                updateNotifications();
                 // Refresh the priority dashboard
                 contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
                 
@@ -1139,7 +1159,12 @@ private void applyFilters(String searchText, String priority, String status, Loc
                 HBox.setHgrow(spacer, Priority.ALWAYS);
                 
                 Button closeButton = new Button("×");
-                closeButton.setStyle("-fx-background-color: transparent; -fx-font-size: 18px; -fx-text-fill: #64748b;");
+                closeButton.setStyle(
+                    "-fx-background-color: transparent; " +
+                    "-fx-font-size: 28px; " +           // Increased font size
+                    "-fx-text-fill: #64748b; " +
+                    "-fx-padding: 2 16 2 16;"           // More padding for a larger clickable area
+                );
                 closeButton.setOnAction(e -> hideDetailsWithAnimation());
                 
                 titleBox.getChildren().addAll(detailsTitle, spacer, closeButton);
@@ -1319,7 +1344,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
                         if (!oldStatus.equals(task.getStatus()) || !oldPriority.equals(task.getPriority())) {
                             updateStatusCounts();
                             updatePriorityCounts();
-                            
+                            updateNotifications();
                             // Refresh the priority dashboard
                             contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
                         }
@@ -1368,10 +1393,8 @@ private void applyFilters(String searchText, String priority, String status, Loc
                 deleteButton.setOnAction(e -> {
                     // Delete task
                     taskController.deleteTask(task);
-                    
                     // Remove from the list
                     taskList.remove(task);
-                    
                     // Hide details panel if showing this task
                     if (currentlyDisplayedTask == task) {
                         hideDetailsWithAnimation();
@@ -1381,7 +1404,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
                     // Update counts
                     updateStatusCounts();
                     updatePriorityCounts();
-                    
+                    updateNotifications(); // <-- Add this line
                     // Refresh the priority dashboard
                     contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
                     
@@ -1474,7 +1497,8 @@ private void checkForDueSoonTasks() {
 }
 private void updateNotifications() {
     if (notificationBox == null) return;
-    notificationBox.getChildren().removeIf(node -> node instanceof HBox); // Remove old notifications
+    // Remove old notifications and any label except the "Due Soon" title
+    notificationBox.getChildren().removeIf(node -> node instanceof HBox || (node instanceof Label && !"Due Soon".equals(((Label) node).getText())));
 
     LocalDate now = LocalDate.now();
     boolean hasDueSoon = false;

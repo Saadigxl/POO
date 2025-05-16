@@ -2,7 +2,6 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
-import model.Task;
 public class User {
     private int id;
     private String username;
