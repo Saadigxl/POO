@@ -112,7 +112,7 @@ public class SignUpView extends Application {
 
         signInLink.setOnAction(e -> new SignInView().start(primaryStage));
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 900, 700); // Set to 900x700 to match WelcomeScreen
         primaryStage.setScene(scene);
         primaryStage.setTitle("Sign Up - TaskFlow");
         primaryStage.show();

@@ -109,7 +109,7 @@ public class SignInView extends Application {
 
         signUpLink.setOnAction(e -> new SignUpView().start(primaryStage));
 
-        Scene scene = new Scene(root, 800, 600);
+        Scene scene = new Scene(root, 900, 700); // Set to 900x700 to match WelcomeScreen
         primaryStage.setScene(scene);
         primaryStage.setTitle("Sign In - TaskFlow");
         primaryStage.show();
@@ -148,7 +148,5 @@ public class SignInView extends Application {
         );
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    
 }

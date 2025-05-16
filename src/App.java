@@ -1,8 +1,8 @@
 import javafx.application.Application;
-import view.SignInView;
+import view.WelcomeScreen;
 
 public class App {
     public static void main(String[] args) {
-        Application.launch(SignInView.class, args);
+        Application.launch(WelcomeScreen.class, args);
     }
 }
