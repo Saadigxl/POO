@@ -234,24 +234,71 @@ public class MainView extends Application {
         navItems.getChildren().addAll(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
         
         // Statistics summary in sidebar
-        VBox statusSummary = new VBox(15);
-        statusSummary.setPadding(new Insets(20, 10, 20, 10));
-        statusSummary.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 8px;");
-        
+        VBox statusSummary = new VBox(15); // Container for statistics section
+        statusSummary.setPadding(new Insets(20, 15, 20, 15)); // Adjusted padding for consistency
+        statusSummary.setStyle(
+                "-fx-background-color: linear-gradient(to bottom right, #FFFFFF, #F8FAFC);" + // Gradient background
+                        "-fx-background-radius: 12px;" + // Rounded corners
+                        "-fx-border-radius: 12px;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-border-color: #E2E8F0;" + // Light border for separation
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 0, 3);" // Subtle shadow for depth
+        );
+
+// Title for this section
         Label summaryTitle = new Label("Tasks Overview");
-        summaryTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-        
+        summaryTitle.setStyle(
+                "-fx-font-size: 16px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #1E293B;" // Darker blue-gray text for title
+        );
+
+// Create the mini status chart (customized style if needed)
         VBox statusChart = createMiniStatusChart();
-        
+        statusChart.setStyle("-fx-padding: 10px; -fx-spacing: 10px;"); // Add space inside the chart container
+
+// Add content to the statistics section
         statusSummary.getChildren().addAll(summaryTitle, statusChart);
-        
-        // --- Add this for notifications ---
-        notificationBox = new VBox(10); // <-- Assign to the class field!
-        notificationBox.setPadding(new Insets(10, 0, 10, 0));
-        notificationBox.setStyle("-fx-background-color: #fef9c3; -fx-background-radius: 8px;");
+
+
+        // --- Notifications Box ---
+        notificationBox = new VBox(10); // Create the notification container
+        notificationBox.setPadding(new Insets(15, 15, 15, 15));
+        notificationBox.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #FFD700, #FFFACD);" + // Smooth gradient effect
+                        "-fx-background-radius: 12px; " +
+                        "-fx-border-radius: 12px; " +
+                        "-fx-border-width: 1px; " +
+                        "-fx-border-color: #F59E0B;"
+        );
+
+// Add a title for the notifications
         Label notificationTitle = new Label("Due Soon");
-        notificationTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #b45309;");
-        notificationBox.getChildren().add(notificationTitle);
+        notificationTitle.setStyle(
+                "-fx-font-size: 16px; " +
+                        "-fx-font-weight: bold; " +
+                        "-fx-text-fill: #92400E;" // A bolder orange color for the title
+        );
+
+// Placeholder notification
+        Label notificationMessage = new Label("You have 3 tasks due in the next 24 hours!");
+        notificationMessage.setStyle("-fx-font-size: 13px; -fx-text-fill: #4B5563;"); // Gray text for details
+
+// Add an icon by using a Unicode emoji or image
+        Label notificationIcon = new Label("\u26A0"); // ⚠ Warning symbol as an icon
+        notificationIcon.setStyle("-fx-font-size: 16px; -fx-text-fill: #92400E;"); // Match title color
+
+        HBox notificationItem = new HBox(10, notificationIcon, notificationMessage);
+        notificationItem.setAlignment(Pos.CENTER_LEFT); // Align content to the left
+
+// Add entry animation for the notification box
+        notificationBox.getChildren().addAll(notificationTitle, notificationItem);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(500), notificationBox);
+        fadeIn.setFromValue(0); // Fade in from invisible
+        fadeIn.setToValue(1); // Fully visible
+        fadeIn.play();
+
+
         // -----------------------------------
 
         // Log Out button
@@ -291,32 +338,57 @@ public class MainView extends Application {
             button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
         }
     }
-    
+
     private VBox createMiniStatusChart() {
-        // This could be replaced with a small chart in a production app
-        VBox chartContainer = new VBox(10);
-        
-        // For now, just display status distribution with colored indicators
-        HBox todoBar = createStatusBar("To Do", "#3b82f6");
-        HBox inProgressBar = createStatusBar("In Progress", "#f59e0b");
-        HBox doneBar = createStatusBar("Done", "#10b981");
-        
+        VBox chartContainer = new VBox(15); // Container for chart bars
+        chartContainer.setPadding(new Insets(15, 10, 15, 10)); // Add padding
+        chartContainer.setStyle(
+                "-fx-background-color: linear-gradient(to bottom right, #FFFFFF, #F8FAFC);" + // Gradient background
+                        "-fx-background-radius: 12px;" + // Rounded edges
+                        "-fx-border-radius: 12px;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-border-color: #E2E8F0;" + // Light border
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 0, 3);" // Shadow effect
+        );
+
+        // Add individual status bars
+        HBox todoBar = createStatusBar("To Do", "#3b82f6"); // Blue for "To Do"
+        HBox inProgressBar = createStatusBar("In Progress", "#f59e0b"); // Yellow for "In Progress"
+        HBox doneBar = createStatusBar("Done", "#10b981"); // Green for "Done"
+
+        // Add status bars to the container
         chartContainer.getChildren().addAll(todoBar, inProgressBar, doneBar);
         return chartContainer;
     }
-    
+
     private HBox createStatusBar(String status, String color) {
-        HBox bar = new HBox(10);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        
-        Circle statusDot = new Circle(6, Color.web(color));
+        HBox statusBar = new HBox(10); // Container for each status row
+        statusBar.setPadding(new Insets(10, 15, 10, 15)); // Add consistent padding
+        statusBar.setAlignment(Pos.CENTER_LEFT); // Align items to the left
+        statusBar.setStyle(
+                "-fx-background-color: " + color + ";" +       // Background color
+                        "-fx-background-radius: 12px;" +              // Rounded corners for better visuals
+                        "-fx-border-radius: 12px;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 6, 0, 0, 3);" // Add shadow for depth
+        );
+
+        // Label to display the status name
         Label statusLabel = new Label(status);
-        statusLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
-        
-        bar.getChildren().addAll(statusDot, statusLabel);
-        return bar;
+        statusLabel.setStyle(
+                "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #FFFFFF;" // White text for contrast with colorful backgrounds
+        );
+
+        // Placeholder for visualizing tasks as a bar (optional)
+        Region barFiller = new Region();
+        HBox.setHgrow(barFiller, Priority.ALWAYS); // Stretch filler across the available space
+
+        // Add the text label and filler to the row
+        statusBar.getChildren().addAll(statusLabel, barFiller);
+        return statusBar;
     }
-    
+
     private Button createNavButton(String text, boolean isActive) {
         Button button = new Button(text);
         button.setPrefWidth(190);
@@ -388,81 +460,160 @@ public class MainView extends Application {
     }
     
     
-// Replace the createTaskViewSection() method with this card-based implementation
+
 private VBox createTaskViewSection() {
     VBox taskViewSection = new VBox(20);
     taskViewSection.setStyle("-fx-background-color: #f8fafc; -fx-border-radius: 12px; -fx-padding: 20;");
-    
+
     // Create horizontal box for title and all filter controls
     HBox titleSearchFilterBox = new HBox(15);
     titleSearchFilterBox.setAlignment(Pos.CENTER_LEFT);
 
-    // Task list title
+// Task list title
     Label listTitle = new Label("Your Tasks");
-    listTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-    
+    listTitle.setStyle(
+            "-fx-font-size: 22px;" + // Slightly larger font for emphasis
+                    "-fx-font-weight: bold;" +
+                    "-fx-text-fill: #1E293B;" // Dark blue-gray text for contrast
+    );
+
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
-    
-    // Create filter controls container
-    HBox filterControls = new HBox(10);
+
+// Create filter controls container
+    HBox filterControls = new HBox(12); // More spacing between the controls
     filterControls.setAlignment(Pos.CENTER_RIGHT);
 
-    // Priority filter
+// Priority filter
     ComboBox<String> priorityFilter = new ComboBox<>();
     priorityFilter.getItems().addAll("All Priorities", "High", "Medium", "Low");
     priorityFilter.setValue("All Priorities");
-    priorityFilter.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cbd5e1; -fx-border-radius: 6px;");
-    priorityFilter.setPrefWidth(120);
-    
-    // Status filter
+    priorityFilter.setStyle(
+            "-fx-background-color: #FFFFFF;" + // White background for contrast
+                    "-fx-border-color: #CBD5E1;" + // Light gray border for subtle design
+                    "-fx-border-radius: 8px;" + // More rounded edges
+                    "-fx-padding: 6px 12px;" // Better inner padding for text
+    );
+    priorityFilter.setPrefWidth(140); // Adjusted width for better alignment
+
+// Status filter
     ComboBox<String> statusFilter = new ComboBox<>();
     statusFilter.getItems().addAll("All Statuses", "To Do", "In Progress", "Done");
     statusFilter.setValue("All Statuses");
-    statusFilter.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cbd5e1; -fx-border-radius: 6px;");
-    statusFilter.setPrefWidth(120);
-    
-    // Date filter
+    statusFilter.setStyle(
+            "-fx-background-color: #FFFFFF;" +
+                    "-fx-border-color: #CBD5E1;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-padding: 6px 12px;"
+    );
+    statusFilter.setPrefWidth(140);
+
+// Date filter
     DatePicker dateFilter = new DatePicker();
     dateFilter.setPromptText("Filter by date");
-    dateFilter.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cbd5e1; -fx-border-radius: 6px;");
-    
-    // Search box
+    dateFilter.setStyle(
+            "-fx-background-color: #FFFFFF;" +
+                    "-fx-border-color: #CBD5E1;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-padding: 6px;"
+    );
+
+// Search box
     TextField searchBox = new TextField();
     searchBox.setPromptText("Search tasks...");
-    searchBox.setPrefWidth(180);
-    searchBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #cbd5e1; -fx-border-radius: 6px; -fx-padding: 8px;");
-    
-    // Filter buttons container
-    HBox filterButtons = new HBox(5);
-    filterButtons.setAlignment(Pos.CENTER);
-    
-    // Apply filter button
-    Button applyFilterBtn = new Button("Apply");
-    applyFilterBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-background-radius: 6px; -fx-padding: 6px 12px;");
-    
-    // Clear filter button
-    Button clearFilterBtn = new Button("Clear");
-    clearFilterBtn.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #475569; -fx-background-radius: 6px; -fx-padding: 6px 12px;");
-    
-    filterButtons.getChildren().addAll(applyFilterBtn, clearFilterBtn);
-    
-    // Add all filter controls to the container
-    filterControls.getChildren().addAll(
-        priorityFilter, 
-        statusFilter, 
-        dateFilter,
-        searchBox,
-        filterButtons
+    searchBox.setPrefWidth(200); // Increased width for better usability
+    searchBox.setStyle(
+            "-fx-background-color: #FFFFFF;" +
+                    "-fx-border-color: #CBD5E1;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-padding: 8px;" +
+                    "-fx-font-size: 14px;" // Match with input font sizes
     );
-    
+
+// Filter buttons container
+    HBox filterButtons = new HBox(8); // Adjusted spacing between buttons
+    filterButtons.setAlignment(Pos.CENTER);
+
+// Apply filter button
+    Button applyFilterBtn = new Button("Apply");
+    applyFilterBtn.setStyle(
+            "-fx-background-color: #4F46E5;" + // Indigo background
+                    "-fx-text-fill: white;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" + // Better button size
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.3), 6, 0, 1, 2);" // Subtle shadow effect
+    );
+
+// Clear filter button
+    Button clearFilterBtn = new Button("Clear");
+    clearFilterBtn.setStyle(
+            "-fx-background-color: #E5E7EB;" + // Light gray background
+                    "-fx-text-fill: #475569;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" +
+                    "-fx-cursor: hand;"
+    );
+
+// Add hover effects for buttons
+    applyFilterBtn.setOnMouseEntered(e -> applyFilterBtn.setStyle(
+            "-fx-background-color: #4338CA;" + // Darker indigo for hover
+                    "-fx-text-fill: white;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(67, 56, 202, 0.4), 8, 0, 1, 3);"
+    ));
+    applyFilterBtn.setOnMouseExited(e -> applyFilterBtn.setStyle(
+            "-fx-background-color: #4F46E5;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" +
+                    "-fx-cursor: hand;" +
+                    "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.3), 6, 0, 1, 2);"
+    ));
+
+    clearFilterBtn.setOnMouseEntered(e -> clearFilterBtn.setStyle(
+            "-fx-background-color: #D1D5DB;" + // Slightly darker gray
+                    "-fx-text-fill: #475569;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" +
+                    "-fx-cursor: hand;"
+    ));
+    clearFilterBtn.setOnMouseExited(e -> clearFilterBtn.setStyle(
+            "-fx-background-color: #E5E7EB;" +
+                    "-fx-text-fill: #475569;" +
+                    "-fx-font-size: 14px;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-padding: 8px 16px;" +
+                    "-fx-cursor: hand;"
+    ));
+
+// Add buttons to the filter buttons container
+    filterButtons.getChildren().addAll(applyFilterBtn, clearFilterBtn);
+
+// Add all filter controls to the container
+    filterControls.getChildren().addAll(
+            priorityFilter,
+            statusFilter,
+            dateFilter,
+            searchBox,
+            filterButtons
+    );
+
+// Add title and filter controls to the main horizontal box
     titleSearchFilterBox.getChildren().addAll(listTitle, spacer, filterControls);
-    
+
     // Custom ListView for card-style tasks
     taskListView = new ListView<>(taskList);
     taskListView.setId("card-task-list");
     taskListView.setStyle("-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 10;");
-    
+
     // Custom cell factory for card-style tasks (keep your existing code here)
     taskListView.setCellFactory(lv -> new ListCell<Task>() {
         @Override
@@ -480,17 +631,17 @@ private VBox createTaskViewSection() {
             }
         }
     });
-    
+
     // Search functionality
     searchBox.textProperty().addListener((observable, oldValue, newValue) -> {
         applyFilters(newValue, priorityFilter.getValue(), statusFilter.getValue(), dateFilter.getValue());
     });
-    
+
     // Apply filters button action
     applyFilterBtn.setOnAction(e -> {
         applyFilters(searchBox.getText(), priorityFilter.getValue(), statusFilter.getValue(), dateFilter.getValue());
     });
-    
+
     // Clear filters button action
     clearFilterBtn.setOnAction(e -> {
         searchBox.clear();
@@ -499,7 +650,7 @@ private VBox createTaskViewSection() {
         dateFilter.setValue(null);
         taskListView.setItems(taskList); // Reset to full list
     });
-    
+
     taskListView.setOnMouseClicked(e -> {
         Task clickedTask = taskListView.getSelectionModel().getSelectedItem();
         if (clickedTask != null) {
@@ -522,6 +673,7 @@ private VBox createTaskViewSection() {
 
     return taskViewSection;
 }
+
 
 // Helper method to create task card (extract from your cell factory)
 private VBox createTaskCard(Task task) {
@@ -758,30 +910,45 @@ private void applyFilters(String searchText, String priority, String status, Loc
     
     taskListView.setItems(filteredList);
 }
-    
+
     private VBox createPriorityDashboard() {
         // Ensure priorityCounts is up to date for the current user's tasks
         updatePriorityCounts();
 
         VBox dashboard = new VBox(30);
         dashboard.setPadding(new Insets(20));
-        dashboard.setStyle("-fx-background-color: #f8fafc;");
-        
+        dashboard.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #F9FAFB, #EDF2F7);" + // Light gradient background
+                        "-fx-background-radius: 12px;" + // Rounded corners for the dashboard
+                        "-fx-border-radius: 12px;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-border-color: #E2E8F0;" + // Light border
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 0, 3);"
+        );
+
         // Dashboard title
         Label dashboardTitle = new Label("Priority Dashboard");
         dashboardTitle.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-        
+
         // Priority distribution chart
         VBox chartSection = new VBox(15);
-        chartSection.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12px; -fx-padding: 20;");
-        
+        chartSection.setPadding(new Insets(20));
+        chartSection.setStyle(
+                "-fx-background-color: #ffffff;" + // White card-like background
+                        "-fx-background-radius: 12px;" +  // Rounded corners
+                        "-fx-border-radius: 12px;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-border-color: #E2E8F0;" +    // Light gray border
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 0, 3);"
+        );
+
         Label chartTitle = new Label("Task Distribution by Priority");
         chartTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
 
         // Check if there is any data to show
         int total = priorityCounts.getOrDefault("High", 0)
-                  + priorityCounts.getOrDefault("Medium", 0)
-                  + priorityCounts.getOrDefault("Low", 0);
+                + priorityCounts.getOrDefault("Medium", 0)
+                + priorityCounts.getOrDefault("Low", 0);
 
         if (total > 0) {
             PieChart priorityChart = createPriorityPieChart();
@@ -791,22 +958,22 @@ private void applyFilters(String searchText, String priority, String status, Loc
             noDataLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #64748b; -fx-padding: 40 0 40 0;");
             chartSection.getChildren().addAll(chartTitle, noDataLabel);
         }
-        
+
         // Priority task sections
         HBox prioritySections = new HBox(20);
         prioritySections.setAlignment(Pos.CENTER);
-        
+
         // High priority tasks
         VBox highPrioritySection = createPrioritySection("High Priority", "#ef4444");
-        
+
         // Medium priority tasks
         VBox mediumPrioritySection = createPrioritySection("Medium Priority", "#f59e0b");
-        
+
         // Low priority tasks
         VBox lowPrioritySection = createPrioritySection("Low Priority", "#10b981");
-        
+
         prioritySections.getChildren().addAll(highPrioritySection, mediumPrioritySection, lowPrioritySection);
-        
+
         dashboard.getChildren().addAll(dashboardTitle, chartSection, prioritySections);
         return dashboard;
     }
@@ -837,21 +1004,29 @@ private void applyFilters(String searchText, String priority, String status, Loc
         return chart;
     }
     
+
     private VBox createPrioritySection(String priority, String color) {
         VBox section = new VBox(15);
         section.setPrefWidth(300);
-        section.setStyle("-fx-background-color: #ffffff; -fx-background-radius: 12px; -fx-padding: 20;");
+        section.setPadding(new Insets(20));
+        section.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #FFFFFF, #F8FAFC);" + // Light card gradient
+                        "-fx-background-radius: 12px;" + // Rounded corners
+                        "-fx-border-radius: 12px;" +
+                        "-fx-border-width: 1px;" +
+                        "-fx-border-color: #E2E8F0;" + // Light border
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 0, 3);"
+        );
 
         // Section header with count
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Circle priorityDot = new Circle(8, Color.web(color));
+        Circle priorityDot = new Circle(8, Color.web(color)); // Colored dot for priority type
 
         Label priorityLabel = new Label(priority);
         priorityLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
 
-        // Filter tasks by exact priority
         String priorityKey = priority.replace(" Priority", "");
         int count = 0;
         for (Task task : taskList) {
@@ -868,41 +1043,43 @@ private void applyFilters(String searchText, String priority, String status, Loc
 
         header.getChildren().addAll(priorityDot, priorityLabel, spacer, countLabel);
 
-        // Task list for this priority
+        // Task card list
         VBox tasksList = new VBox(10);
-
         for (Task task : taskList) {
             if (task.getPriority().equalsIgnoreCase(priorityKey)) {
                 HBox taskItem = new HBox(10);
                 taskItem.setAlignment(Pos.CENTER_LEFT);
                 taskItem.setPadding(new Insets(8));
-                taskItem.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 6px;");
+                taskItem.setStyle(
+                        "-fx-background-color: #f9fafb;" + // Subtle light background
+                                "-fx-background-radius: 8px;" +   // Rounded card design
+                                "-fx-padding: 8;"
+                );
 
                 // Status indicator
                 Circle statusDot = new Circle(6);
                 switch (task.getStatus()) {
                     case "To Do":
-                        statusDot.setFill(Color.web("#3b82f6"));
+                        statusDot.setFill(Color.web("#3b82f6")); // Blue for "To Do"
                         break;
                     case "In Progress":
-                        statusDot.setFill(Color.web("#f59e0b"));
+                        statusDot.setFill(Color.web("#f59e0b")); // Yellow for "In Progress"
                         break;
                     case "Done":
-                        statusDot.setFill(Color.web("#10b981"));
+                        statusDot.setFill(Color.web("#10b981")); // Green for "Done"
                         break;
                     default:
-                        statusDot.setFill(Color.web("#cbd5e1"));
+                        statusDot.setFill(Color.web("#cbd5e1")); // Default gray color
                 }
 
                 Label taskTitle = new Label(task.getTitle());
-                taskTitle.setStyle("-fx-font-size: 14px;");
+                taskTitle.setStyle("-fx-font-size: 14px; -fx-text-fill: #1e293b;");
 
                 taskItem.getChildren().addAll(statusDot, taskTitle);
                 tasksList.getChildren().add(taskItem);
             }
         }
 
-        // If no tasks, show message
         if (tasksList.getChildren().isEmpty()) {
             Label noTasksLabel = new Label("No " + priorityKey.toLowerCase() + " priority tasks");
             noTasksLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #64748b;");
@@ -912,6 +1089,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
         section.getChildren().addAll(header, tasksList);
         return section;
     }
+
     
     private void showAddTaskDialog(Stage parentStage) {
         // Create a dialog

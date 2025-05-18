@@ -82,10 +82,7 @@ public class WelcomeScreen extends Application {
 
         startButton.setOnAction(e -> fadeTransition(contentBox, onStart));
 
-        Label versionLabel = new Label("v1.0 • Modern Task Management");
-        versionLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #94a3b8; -fx-padding: 20 0 0 0;");
-
-        contentBox.getChildren().addAll(logoContainer, welcomeLabel, subtitle, featureBox, startButton, versionLabel);
+        contentBox.getChildren().addAll(logoContainer, welcomeLabel, subtitle, featureBox, startButton);
 
         welcomeRoot.setCenter(contentBox);
 
