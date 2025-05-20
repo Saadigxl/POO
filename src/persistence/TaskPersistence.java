@@ -7,5 +7,5 @@ public interface TaskPersistence {
     void addTask(Task task);
     void updateTask(Task task);
     void deleteTask(Task task);
-    List<Task> getAllTasks(int userId); // <-- Change here
+    List<Task> getAllTasks(int userId);
 }

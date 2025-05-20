@@ -6,7 +6,7 @@ import model.User;
 public class UserPersistence {
     private static final String URL = "jdbc:mysql://localhost:3306/task_manager";
     private static final String USER = "root";
-    private static final String PASSWORD = "root";
+    private static final String PASSWORD = "2005";
 
     public boolean registerUser(String username, String password) {
         String sql = "INSERT INTO users (username, password) VALUES (?, ?)";

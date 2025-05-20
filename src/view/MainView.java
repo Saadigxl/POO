@@ -1,5 +1,6 @@
 package view;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Task;
 import persistence.DatabasePersistence;
+import model.Note;
+import persistence.NotePersistence;
+import javafx.scene.control.TextArea;
+import javafx.scene.input.MouseButton;
 
 public class MainView extends Application {
     private TaskController taskController;
@@ -47,6 +52,7 @@ public class MainView extends Application {
     private VBox detailsSection;
     private VBox mainContentArea;
     private Timeline resizeAnimation;
+    
     public Timeline getResizeAnimation() {
         return resizeAnimation;
     }
@@ -71,7 +77,7 @@ public class MainView extends Application {
     private TabPane contentTabPane;
     private model.User user;
 
-    private VBox notificationBox; // Add this as a class field
+    private VBox notificationBox;
 
     public void setUser(model.User user) {
         this.user = user;
@@ -469,7 +475,7 @@ private VBox createTaskViewSection() {
     HBox titleSearchFilterBox = new HBox(15);
     titleSearchFilterBox.setAlignment(Pos.CENTER_LEFT);
 
-// Task list title
+    // Task list title
     Label listTitle = new Label("Your Tasks");
     listTitle.setStyle(
             "-fx-font-size: 22px;" + // Slightly larger font for emphasis
@@ -480,11 +486,11 @@ private VBox createTaskViewSection() {
     Region spacer = new Region();
     HBox.setHgrow(spacer, Priority.ALWAYS);
 
-// Create filter controls container
+    // Create filter controls container
     HBox filterControls = new HBox(12); // More spacing between the controls
     filterControls.setAlignment(Pos.CENTER_RIGHT);
 
-// Priority filter
+    // Priority filter
     ComboBox<String> priorityFilter = new ComboBox<>();
     priorityFilter.getItems().addAll("All Priorities", "High", "Medium", "Low");
     priorityFilter.setValue("All Priorities");
@@ -496,7 +502,7 @@ private VBox createTaskViewSection() {
     );
     priorityFilter.setPrefWidth(140); // Adjusted width for better alignment
 
-// Status filter
+    // Status filter
     ComboBox<String> statusFilter = new ComboBox<>();
     statusFilter.getItems().addAll("All Statuses", "To Do", "In Progress", "Done");
     statusFilter.setValue("All Statuses");
@@ -508,7 +514,7 @@ private VBox createTaskViewSection() {
     );
     statusFilter.setPrefWidth(140);
 
-// Date filter
+    // Date filter
     DatePicker dateFilter = new DatePicker();
     dateFilter.setPromptText("Filter by date");
     dateFilter.setStyle(
@@ -518,7 +524,7 @@ private VBox createTaskViewSection() {
                     "-fx-padding: 6px;"
     );
 
-// Search box
+    // Search box
     TextField searchBox = new TextField();
     searchBox.setPromptText("Search tasks...");
     searchBox.setPrefWidth(200); // Increased width for better usability
@@ -530,11 +536,11 @@ private VBox createTaskViewSection() {
                     "-fx-font-size: 14px;" // Match with input font sizes
     );
 
-// Filter buttons container
+    // Filter buttons container
     HBox filterButtons = new HBox(8); // Adjusted spacing between buttons
     filterButtons.setAlignment(Pos.CENTER);
 
-// Apply filter button
+    // Apply filter button
     Button applyFilterBtn = new Button("Apply");
     applyFilterBtn.setStyle(
             "-fx-background-color: #4F46E5;" + // Indigo background
@@ -546,7 +552,7 @@ private VBox createTaskViewSection() {
                     "-fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.3), 6, 0, 1, 2);" // Subtle shadow effect
     );
 
-// Clear filter button
+    // Clear filter button
     Button clearFilterBtn = new Button("Clear");
     clearFilterBtn.setStyle(
             "-fx-background-color: #E5E7EB;" + // Light gray background
@@ -557,7 +563,7 @@ private VBox createTaskViewSection() {
                     "-fx-cursor: hand;"
     );
 
-// Add hover effects for buttons
+    // Add hover effects for buttons
     applyFilterBtn.setOnMouseEntered(e -> applyFilterBtn.setStyle(
             "-fx-background-color: #4338CA;" + // Darker indigo for hover
                     "-fx-text-fill: white;" +
@@ -594,10 +600,10 @@ private VBox createTaskViewSection() {
                     "-fx-cursor: hand;"
     ));
 
-// Add buttons to the filter buttons container
-    filterButtons.getChildren().addAll(applyFilterBtn, clearFilterBtn);
+    // Add buttons to the filter buttons container
+    filterButtons.getChildren().addAll(clearFilterBtn);
 
-// Add all filter controls to the container
+    // Add all filter controls to the container
     filterControls.getChildren().addAll(
             priorityFilter,
             statusFilter,
@@ -606,7 +612,7 @@ private VBox createTaskViewSection() {
             filterButtons
     );
 
-// Add title and filter controls to the main horizontal box
+    // Add title and filter controls to the main horizontal box
     titleSearchFilterBox.getChildren().addAll(listTitle, spacer, filterControls);
 
     // Custom ListView for card-style tasks
@@ -636,10 +642,14 @@ private VBox createTaskViewSection() {
     searchBox.textProperty().addListener((observable, oldValue, newValue) -> {
         applyFilters(newValue, priorityFilter.getValue(), statusFilter.getValue(), dateFilter.getValue());
     });
-
-    // Apply filters button action
-    applyFilterBtn.setOnAction(e -> {
-        applyFilters(searchBox.getText(), priorityFilter.getValue(), statusFilter.getValue(), dateFilter.getValue());
+    priorityFilter.valueProperty().addListener((obs, oldVal, newVal) -> {
+        applyFilters(searchBox.getText(), newVal, statusFilter.getValue(), dateFilter.getValue());
+    });
+    statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> {
+        applyFilters(searchBox.getText(), priorityFilter.getValue(), newVal, dateFilter.getValue());
+    });
+    dateFilter.valueProperty().addListener((obs, oldVal, newVal) -> {
+        applyFilters(searchBox.getText(), priorityFilter.getValue(), statusFilter.getValue(), newVal);
     });
 
     // Clear filters button action
@@ -1269,50 +1279,63 @@ private void applyFilters(String searchText, String priority, String status, Loc
             }
             
             private void showDetailsWithAnimation(Task task) {
-                if (detailsSection == null) {
-                    createDetailsSection();
-                }
+                if (detailsSection == null) createDetailsSection();
+                if (notesSection == null) createNotesSection();
 
                 updateDetailsSection(task);
+                updateNotesSection(task);
 
-                if (!mainContentArea.getChildren().contains(detailsSection)) {
-                    detailsSection.setOpacity(0);
-                    detailsSection.setTranslateY(80); // Start lower (off-screen)
-                    mainContentArea.getChildren().add(detailsSection);
+                // Remove previous details/notes if present
+                mainContentArea.getChildren().removeIf(node -> node == detailsSection || node == notesSection || node instanceof VBox || node instanceof HBox);
 
-                    // Slide-up and fade-in animation
-                    TranslateTransition slideIn = new TranslateTransition(Duration.millis(420), detailsSection);
-                    slideIn.setFromY(80);
-                    slideIn.setToY(0);
-                    slideIn.setInterpolator(Interpolator.EASE_OUT);
+                // Close button at the top right
+                HBox closeRow = new HBox();
+                closeRow.setAlignment(Pos.TOP_RIGHT);
+                closeRow.setPadding(new Insets(0, 0, 10, 0));
+                Button closeButton = new Button("×");
+                closeButton.setStyle(
+                    "-fx-background-color: transparent; " +
+                    "-fx-font-size: 28px; " +
+                    "-fx-text-fill: #64748b; " +
+                    "-fx-padding: 2 16 2 16;"
+                );
+                closeButton.setOnAction(e -> hideDetailsWithAnimation());
+                closeRow.getChildren().add(closeButton);
 
-                    FadeTransition fadeIn = new FadeTransition(Duration.millis(420), detailsSection);
-                    fadeIn.setFromValue(0);
-                    fadeIn.setToValue(1);
+                // Set both sections to 50% width
+                detailsSection.setPrefWidth(0.5 * mainContentArea.getWidth());
+                notesSection.setPrefWidth(0.5 * mainContentArea.getWidth());
+                HBox.setHgrow(detailsSection, Priority.ALWAYS);
+                HBox.setHgrow(notesSection, Priority.ALWAYS);
 
-                    slideIn.play();
-                    fadeIn.play();
-                }
+                HBox detailsAndNotes = new HBox(0, detailsSection, notesSection);
+                detailsAndNotes.setAlignment(Pos.TOP_LEFT);
+                detailsAndNotes.prefWidthProperty().bind(mainContentArea.widthProperty());
+
+                VBox wrapper = new VBox(closeRow, detailsAndNotes);
+                wrapper.setAlignment(Pos.TOP_LEFT);
+
+                wrapper.setOpacity(0);
+                wrapper.setTranslateY(80);
+                mainContentArea.getChildren().add(wrapper);
+
+                TranslateTransition slideIn = new TranslateTransition(Duration.millis(420), wrapper);
+                slideIn.setFromY(80);
+                slideIn.setToY(0);
+                slideIn.setInterpolator(Interpolator.EASE_OUT);
+
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(420), wrapper);
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(1);
+
+                slideIn.play();
+                fadeIn.play();
+
                 selectedTask = task;
             }
 
             private void hideDetailsWithAnimation() {
-                if (detailsSection != null && mainContentArea.getChildren().contains(detailsSection)) {
-                    // Slide-down and fade-out animation
-                    TranslateTransition slideOut = new TranslateTransition(Duration.millis(320), detailsSection);
-                    slideOut.setFromY(0);
-                    slideOut.setToY(80);
-                    slideOut.setInterpolator(Interpolator.EASE_IN);
-
-                    FadeTransition fadeOut = new FadeTransition(Duration.millis(320), detailsSection);
-                    fadeOut.setFromValue(1);
-                    fadeOut.setToValue(0);
-
-                    slideOut.play();
-                    fadeOut.play();
-
-                    fadeOut.setOnFinished(e -> mainContentArea.getChildren().remove(detailsSection));
-                }
+                mainContentArea.getChildren().removeIf(node -> node == detailsSection || node == notesSection || node instanceof VBox || node instanceof HBox);
                 selectedTask = null;
             }
             
@@ -1325,28 +1348,16 @@ private void applyFilters(String searchText, String priority, String status, Loc
             
             private void updateDetailsSection(Task task) {
                 detailsSection.getChildren().clear();
-                
-                // Title with close button
+
+                // Title only (no close button here)
                 HBox titleBox = new HBox();
                 titleBox.setAlignment(Pos.CENTER_LEFT);
-                
+
                 Label detailsTitle = new Label("Task Details");
                 detailsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-                
-                Region spacer = new Region();
-                HBox.setHgrow(spacer, Priority.ALWAYS);
-                
-                Button closeButton = new Button("×");
-                closeButton.setStyle(
-                    "-fx-background-color: transparent; " +
-                    "-fx-font-size: 28px; " +           // Increased font size
-                    "-fx-text-fill: #64748b; " +
-                    "-fx-padding: 2 16 2 16;"           // More padding for a larger clickable area
-                );
-                closeButton.setOnAction(e -> hideDetailsWithAnimation());
-                
-                titleBox.getChildren().addAll(detailsTitle, spacer, closeButton);
-                
+
+                titleBox.getChildren().addAll(detailsTitle);
+
                 // Task information
                 VBox infoBox = new VBox(15);
                 infoBox.setPadding(new Insets(10, 0, 10, 0));
@@ -1640,12 +1651,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
                 }
             }
             
-            private void fadeTransition(VBox contentBox, Runnable onFinished) {
-                FadeTransition fade = new FadeTransition(Duration.millis(400), contentBox);
-                fade.setFromValue(1.0);
-                fade.setToValue(0.0);
-                fade.setOnFinished(e -> onFinished.run());
-                fade.play();}
+            
             
         private void showSignInWindow(Stage stage) {
     // Replace 'SignInView' with your actual login window class
@@ -1656,23 +1662,7 @@ private void applyFilters(String searchText, String priority, String status, Loc
         e.printStackTrace();
     }
 }
-private void checkForDueSoonTasks() {
-    LocalDate now = LocalDate.now();
-    for (Task task : taskList) {
-        if (!"Done".equals(task.getStatus()) && task.getDueDate() != null) {
-            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(now, task.getDueDate());
-            if (daysBetween == 0) {
-                javafx.application.Platform.runLater(() -> {
-                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
-                    alert.setTitle("Task Due Soon");
-                    alert.setHeaderText("Task due within 24 hours!");
-                    alert.setContentText("Task: " + task.getTitle() + "\nDue: " + task.getDueDate());
-                    alert.show();
-                });
-            }
-        }
-    }
-}
+
 private void updateNotifications() {
     if (notificationBox == null) return;
     // Remove old notifications and any label except the "Due Soon" title
@@ -1698,7 +1688,127 @@ private void updateNotifications() {
     }
     if (!hasDueSoon) {
         Label none = new Label("No tasks due soon.");
-        none.setStyle("-fx-font-size: 13px; -fx-text-fill: #64748b;");
+        none.setStyle("-fx-font-size:  13px; -fx-text-fill: #64748b;");
         notificationBox.getChildren().add(none);
     }
-}}
+}
+
+private VBox notesSection;
+private ListView<Note> notesListView;
+private ObservableList<Note> noteList = FXCollections.observableArrayList();
+private NotePersistence notePersistence = new NotePersistence();
+private static final DateTimeFormatter NOTE_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
+
+private void createNotesSection() {
+    notesSection = new VBox(15);
+    notesSection.setPrefWidth(350);
+    notesSection.setPadding(new Insets(20));
+    notesSection.setStyle("-fx-background-color: #fff; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;");
+
+    Label notesTitle = new Label("Notes");
+    notesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+
+    notesListView = new ListView<>(noteList);
+    notesListView.setCellFactory(lv -> new ListCell<Note>() {
+        @Override
+        protected void updateItem(Note note, boolean empty) {
+            super.updateItem(note, empty);
+            if (empty || note == null) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                VBox noteBox = new VBox(2);
+                Label content = new Label(note.getContent());
+                content.setWrapText(true);
+                content.setStyle("-fx-font-size: 13px; -fx-text-fill: #334155;");
+                String formattedDate = note.getCreatedAt() != null
+                        ? note.getCreatedAt().format(NOTE_DATE_FORMATTER)
+                        : "";
+                Label date = new Label(formattedDate);
+                date.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
+                noteBox.getChildren().addAll(content, date);
+                setGraphic(noteBox);
+            }
+        }
+    });
+
+    // Double click to edit note
+    notesListView.setOnMouseClicked(e -> {
+        if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+            Note selected = notesListView.getSelectionModel().getSelectedItem();
+            if (selected != null) showEditNoteDialog(selected);
+        }
+    });
+
+    // Add note area
+    TextArea noteInput = new TextArea();
+    noteInput.setPromptText("Add a note...");
+    noteInput.setPrefRowCount(2);
+    noteInput.setStyle("-fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: #cbd5e1;");
+
+    Button addNoteBtn = new Button("Add Note");
+    addNoteBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-background-radius: 6px;");
+    addNoteBtn.setOnAction(e -> {
+        String content = noteInput.getText().trim();
+        if (!content.isEmpty() && selectedTask != null) {
+            Note note = new Note(0, content, java.time.LocalDateTime.now(), selectedTask.getId(), user.getId());
+            notePersistence.addNote(note);
+            updateNotesSection(selectedTask);
+            noteInput.clear();
+        }
+    });
+
+    notesSection.getChildren().addAll(notesTitle, notesListView, noteInput, addNoteBtn);
+    VBox.setVgrow(notesListView, Priority.ALWAYS);
+}
+
+private void updateNotesSection(Task task) {
+    noteList.setAll(notePersistence.getNotesByTask(task.getId()));
+}
+
+private void showEditNoteDialog(Note note) {
+    Stage dialog = new Stage();
+    dialog.initModality(Modality.APPLICATION_MODAL);
+    dialog.setTitle("Edit Note");
+    dialog.setMinWidth(350);
+
+    VBox content = new VBox(15);
+    content.setPadding(new Insets(20));
+
+    TextArea noteArea = new TextArea(note.getContent());
+    noteArea.setPrefRowCount(3);
+
+    HBox buttons = new HBox(10);
+    Button saveBtn = new Button("Save");
+    Button deleteBtn = new Button("Delete");
+    Button cancelBtn = new Button("Cancel");
+
+    saveBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
+    deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
+    cancelBtn.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #64748b;");
+
+    buttons.getChildren().addAll(saveBtn, deleteBtn, cancelBtn);
+    content.getChildren().addAll(noteArea, buttons);
+
+    Scene dialogScene = new Scene(content);
+    dialogScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+    dialog.setScene(dialogScene);
+
+    // Set button actions
+    cancelBtn.setOnAction(e -> dialog.close());
+    saveBtn.setOnAction(e -> {
+        note.setContent(noteArea.getText());
+        notePersistence.updateNote(note);
+        updateNotesSection(selectedTask);
+        dialog.close();
+    });
+    deleteBtn.setOnAction(e -> {
+        notePersistence.deleteNote(note.getId());
+        updateNotesSection(selectedTask);
+        dialog.close();
+    });
+    cancelBtn.setOnAction(e -> dialog.close());
+
+    dialog.show();
+}
+}
