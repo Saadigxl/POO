@@ -232,9 +232,13 @@ public class MainView extends Application {
             setActiveButton(priorityDashboardBtn, viewTasksBtn, addTaskBtn);
         });
         
-        addTaskBtn.setOnAction(e -> {
+        addTaskBtn.setOnAction(event -> {
+            // Open the Add Task dialog
             showAddTaskDialog(primaryStage);
-            setActiveButton(addTaskBtn, viewTasksBtn, priorityDashboardBtn);
+
+            // Remove highlight/focus from the button
+            addTaskBtn.setStyle("-fx-background-color: #f4f6fb;"); // or your default style
+            addTaskBtn.getParent().requestFocus(); // Move focus away from the button
         });
         
         navItems.getChildren().addAll(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
@@ -330,7 +334,7 @@ public class MainView extends Application {
             navItems,
             statusSummary,
             notificationBox,
-            sidebarSpacer,      // <-- This pushes the logout button to the bottom
+            sidebarSpacer,
             logoutButton
         );
 
@@ -447,8 +451,8 @@ public class MainView extends Application {
         contentTabPane.getTabs().addAll(taskListTab, priorityDashboardTab);
 
         contentTabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
-            if (newTab != null && newTab.getText().equals("Priority Dashboard")) {
-                hideDetailsWithAnimation();
+            if (newTab != null && newTab.getText().equals("Dashboard")) {
+                hideDetailsWithAnimation(); // Auto-close details when switching to dashboard
                 currentlyDisplayedTask = null;
                 // Clear selection in the task list view if it exists
                 if (taskListView != null) {
@@ -1337,6 +1341,10 @@ private void applyFilters(String searchText, String priority, String status, Loc
             private void hideDetailsWithAnimation() {
                 mainContentArea.getChildren().removeIf(node -> node == detailsSection || node == notesSection || node instanceof VBox || node instanceof HBox);
                 selectedTask = null;
+                currentlyDisplayedTask = null;
+                if (taskListView != null) {
+                    taskListView.getSelectionModel().clearSelection(); 
+                }
             }
             
             private void createDetailsSection() {
@@ -1536,8 +1544,10 @@ private void applyFilters(String searchText, String priority, String status, Loc
                             updateNotifications();
                             // Refresh the priority dashboard
                             contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
+                        } else {
+                            updateNotifications(); 
                         }
-                        
+
                         dialog.close();
                     }
                 });
