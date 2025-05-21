@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import controller.TaskController;
+import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
 import javafx.animation.Interpolator;
 import javafx.animation.Timeline;
@@ -143,41 +144,115 @@ public class MainView extends Application {
         updateNotifications(); 
     }
     
-    private HBox createHeader() {
-        HBox header = new HBox(20);
-        header.setPadding(new Insets(20));
-        header.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1px 0;");
-        header.setAlignment(Pos.CENTER_LEFT);
+private HBox createHeader() {
+    HBox header = new HBox(20);
+    header.setPadding(new Insets(20));
+    header.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1px 0;");
+    header.setAlignment(Pos.CENTER_LEFT);
+    
+    // Title (Logo)
+    Label title = new Label("TaskFlow");
+    title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+    
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    
+    // Counters section
+    HBox counters = new HBox(20);
+    counters.setAlignment(Pos.CENTER);
+    VBox todoCounter = createCounterBox("To Do", "#3b82f6");
+    todoCountLabel = (Label) todoCounter.getChildren().get(0);
+    VBox inProgressCounter = createCounterBox("In Progress", "#f59e0b");
+    inProgressCountLabel = (Label) inProgressCounter.getChildren().get(0);
+    VBox doneCounter = createCounterBox("Done", "#10b981");
+    doneCountLabel = (Label) doneCounter.getChildren().get(0);
+    
+    counters.getChildren().addAll(todoCounter, inProgressCounter, doneCounter);
+    
+    // Motivation container - added between counters and title
+    VBox motivationContainer = createMotivationContainer();
+    
+    // Add all components to header in the correct order:
+    // title (logo), spacer, motivation container, counters
+    header.getChildren().addAll(title, spacer, motivationContainer, counters);
+    return header;
+}
 
-        // Title
-        Label title = new Label("TaskFlow");
-        title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
-
-        // Spacer to push counters to the right
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        // Task counter indicators
-        HBox counters = new HBox(20);
-        counters.setAlignment(Pos.CENTER);
-        
-        // To Do counter
-        VBox todoCounter = createCounterBox("To Do", "#3b82f6");
-        todoCountLabel = (Label) todoCounter.getChildren().get(0);
-        
-        // In Progress counter
-        VBox inProgressCounter = createCounterBox("In Progress", "#f59e0b");
-        inProgressCountLabel = (Label) inProgressCounter.getChildren().get(0);
-        
-        // Done counter
-        VBox doneCounter = createCounterBox("Done", "#10b981");
-        doneCountLabel = (Label) doneCounter.getChildren().get(0);
-        
-        counters.getChildren().addAll(todoCounter, inProgressCounter, doneCounter);
-        
-        header.getChildren().addAll(title, spacer, counters);
-        return header;
-    }
+// New method to create the motivation container with rotating quotes
+private VBox createMotivationContainer() {
+    // Create the container with the 'motivation' class
+    VBox motivationContainer = new VBox(5);
+    motivationContainer.getStyleClass().add("motivation");
+    motivationContainer.setAlignment(Pos.CENTER);
+    motivationContainer.setPadding(new Insets(5, 15, 5, 15));
+    motivationContainer.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 10px; -fx-border-color: #e2e8f0; -fx-border-width: 1px; -fx-border-radius: 10px;");
+    motivationContainer.setPrefWidth(600);
+    
+    // Create quote label
+    Label quoteLabel = new Label();
+    quoteLabel.setStyle("-fx-font-size: 14px; -fx-font-style: italic; -fx-text-fill: #4f46e5; -fx-font-weight: normal; -fx-wrap-text: true; -fx-text-alignment: center;");
+    quoteLabel.setWrapText(true);
+    quoteLabel.setAlignment(Pos.CENTER);
+    
+    // Create author label
+    Label authorLabel = new Label();
+    authorLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+    
+    // Add labels to container
+    motivationContainer.getChildren().addAll(quoteLabel, authorLabel);
+    
+    // Create array of motivational quotes
+    String[][] quotes = {
+        {"Believe you can and you're halfway there.", "Theodore Roosevelt"},
+        {"The only way to do great work is to love what you do.", "Steve Jobs"},
+        {"Don't watch the clock; do what it does. Keep going.", "Sam Levenson"},
+        {"Quality is not an act, it is a habit.", "Aristotle"},
+        {"Success is not final, failure is not fatal: It is the courage to continue that counts.", "Winston Churchill"},
+        {"The future belongs to those who believe in the beauty of their dreams.", "Eleanor Roosevelt"},
+        {"It always seems impossible until it's done.", "Nelson Mandela"},
+        {"Your time is limited, don't waste it living someone else's life.", "Steve Jobs"},
+        {"The secret of getting ahead is getting started.", "Mark Twain"},
+        {"The best way to predict the future is to create it.", "Peter Drucker"}
+    };
+    
+    // Create a timeline for rotating quotes every 10 seconds
+    Timeline quoteRotation = new Timeline(
+        new javafx.animation.KeyFrame(Duration.seconds(10), event -> {
+            // Get random quote
+            int randomIndex = (int) (Math.random() * quotes.length);
+            String quote = quotes[randomIndex][0];
+            String author = quotes[randomIndex][1];
+            
+            // Create fade transition for smooth quote change
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(500), motivationContainer);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.3);
+            fadeOut.setOnFinished(e -> {
+                // Update quote text
+                quoteLabel.setText(quote);
+                authorLabel.setText("— " + author);
+                
+                // Fade back in
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), motivationContainer);
+                fadeIn.setFromValue(0.3);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            });
+            fadeOut.play();
+        })
+    );
+    
+    // Set timeline to repeat indefinitely
+    quoteRotation.setCycleCount(Animation.INDEFINITE);
+    quoteRotation.play();
+    
+    // Set initial quote
+    int initialIndex = (int) (Math.random() * quotes.length);
+    quoteLabel.setText(quotes[initialIndex][0]);
+    authorLabel.setText("— " + quotes[initialIndex][1]);
+    
+    return motivationContainer;
+}
     
     private VBox createCounterBox(String status, String color) {
         VBox counterBox = new VBox(5);
