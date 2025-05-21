@@ -90,10 +90,10 @@ public class MainView extends Application {
     @Override
     public void start(Stage primaryStage) {
         if (user == null) {
-            // Show WelcomeScreen only if user is not set
+
             WelcomeScreen.show(primaryStage, () -> showMainView(primaryStage));
         } else {
-            // If user is already set (after sign in), show main view directly
+
             showMainView(primaryStage);
         }
     }
@@ -103,7 +103,7 @@ public class MainView extends Application {
 
     private void showMainView(Stage primaryStage) {
         if (user == null) {
-            // Should not happen, but fallback
+
             return;
         }
         
@@ -194,7 +194,15 @@ public class MainView extends Application {
         counterBox.getChildren().addAll(countLabel, statusLabel);
         return counterBox;
     }
-    
+
+    private Button viewTasksBtn;
+    private Button priorityDashboardBtn;
+    private Button addTaskBtn;
+
+    private int currentTabIndex = 0; // Tracks the currently selected tab index.
+    private Button currentActiveButton; // Tracks the currently active button.
+
+
     private VBox createSidebar(Stage primaryStage) {
         VBox sidebar = new VBox(15);
         sidebar.setPrefWidth(220);
@@ -216,33 +224,73 @@ public class MainView extends Application {
         // Navigation items
         VBox navItems = new VBox(5);
         navItems.setPadding(new Insets(10, 0, 10, 0));
-        
+
         // Navigation buttons
-        Button viewTasksBtn = createNavButton("View Tasks", true);
-        Button priorityDashboardBtn = createNavButton("Priority Dashboard", false);
-        Button addTaskBtn = createNavButton("Add New Task", false);
-        
+//        Button viewTasksBtn = createNavButton("View Tasks", true);
+//        Button priorityDashboardBtn = createNavButton("Priority Dashboard", false);
+//        Button addTaskBtn = createNavButton("Add New Task", false);
+
+        viewTasksBtn = createNavButton("View Tasks", true);
+        priorityDashboardBtn = createNavButton("Priority Dashboard", false);
+        addTaskBtn = createNavButton("Add New Task", false);
+
+
+//        viewTasksBtn.setOnAction(e -> {
+//            contentTabPane.getSelectionModel().select(0);
+//            setActiveButton(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
+//        });
+//
+//        priorityDashboardBtn.setOnAction(e -> {
+//            contentTabPane.getSelectionModel().select(1);
+//            setActiveButton(priorityDashboardBtn, viewTasksBtn, addTaskBtn);
+//        });
+//
+//        addTaskBtn.setOnAction(event -> {
+//            // Open the Add Task dialog
+//            showAddTaskDialog(primaryStage);
+//
+//            // Remove highlight/focus from the button
+//            addTaskBtn.setStyle("-fx-background-color: #f4f6fb;"); // or your default style
+//            addTaskBtn.getParent().requestFocus(); // Move focus away from the button
+//        });
+
         viewTasksBtn.setOnAction(e -> {
-            contentTabPane.getSelectionModel().select(0);
-            setActiveButton(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
+            contentTabPane.getSelectionModel().select(0); // Switch to the first tab or view
+            setActiveButton(viewTasksBtn, priorityDashboardBtn, addTaskBtn); // Update active button
         });
-        
+
         priorityDashboardBtn.setOnAction(e -> {
-            contentTabPane.getSelectionModel().select(1);
-            setActiveButton(priorityDashboardBtn, viewTasksBtn, addTaskBtn);
+            contentTabPane.getSelectionModel().select(1); // Switch to the second tab or view
+            setActiveButton(priorityDashboardBtn, viewTasksBtn, addTaskBtn); // Update active button
         });
-        
-        addTaskBtn.setOnAction(event -> {
-            // Open the Add Task dialog
+
+//        addTaskBtn.setOnAction(e -> {
+//            showAddTaskDialog(primaryStage); // Open a dialog box or perform an action
+//            setActiveButton(addTaskBtn, viewTasksBtn, priorityDashboardBtn); // Update active button
+//        });
+
+        addTaskBtn.setOnAction(e -> {
+            // Save the current tab index and active button before opening the dialog
+            currentTabIndex = contentTabPane.getSelectionModel().getSelectedIndex();
+            currentActiveButton = viewTasksBtn; // Default to viewTasksBtn in case of missing state
+            if (priorityDashboardBtn.getUserData() != null &&
+                    priorityDashboardBtn.getUserData().equals("active")) {
+                currentActiveButton = priorityDashboardBtn;
+            } else if (addTaskBtn.getUserData() != null &&
+                    addTaskBtn.getUserData().equals("active")) {
+                currentActiveButton = addTaskBtn;
+            }
+
+            // Open the dialog
             showAddTaskDialog(primaryStage);
 
-            // Remove highlight/focus from the button
-            addTaskBtn.setStyle("-fx-background-color: #f4f6fb;"); // or your default style
-            addTaskBtn.getParent().requestFocus(); // Move focus away from the button
+            // Set the "Add Task" button as the active button temporarily
+            setActiveButton(addTaskBtn, viewTasksBtn, priorityDashboardBtn);
         });
-        
+
+
         navItems.getChildren().addAll(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
-        
+
         // Statistics summary in sidebar
         VBox statusSummary = new VBox(15); // Container for statistics section
         statusSummary.setPadding(new Insets(20, 15, 20, 15)); // Adjusted padding for consistency
@@ -341,12 +389,140 @@ public class MainView extends Application {
         return sidebar;
     }
     
+//    private void setActiveButton(Button activeButton, Button... otherButtons) {
+//        activeButton.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
+//
+//        for (Button button : otherButtons) {
+//            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+//        }
+//    }
+
+//    private void setActiveButton(Button activeButton, Button... otherButtons) {
+//        // Set the active button's style
+//        activeButton.setUserData("active"); // Mark as active (for comparison later)
+//        activeButton.setStyle(
+//                "-fx-background-color: #e0e7ff;" +  // Light blue background for active button
+//                        "-fx-text-fill: #4f46e5;" +        // Dark blue text
+//                        "-fx-font-weight: bold;" +        // Bold font
+//                        "-fx-background-radius: 6px;"    // Rounded corners
+//        );
+//
+//        // Reset the other buttons' styles
+//        for (Button button : otherButtons) {
+//            button.setUserData("inactive"); // Mark as inactive
+//            button.setStyle(
+//                    "-fx-background-color: transparent;" + // Transparent background
+//                            "-fx-text-fill: #64748b;" +            // Grayish blue text
+//                            "-fx-font-weight: normal;" +          // Normal font weight
+//                            "-fx-background-radius: 6px;"         // Rounded corners
+//            );
+//        }
+//
+//        // Ensure the hover effect doesn’t accidentally override styles
+//        setHoverEffects(activeButton, true);
+//        for (Button button : otherButtons) {
+//            setHoverEffects(button, false);
+//        }
+//    }
+//
+//    private void setHoverEffects(Button button, boolean isActive) {
+//        button.setOnMouseEntered(e -> {
+//            // Only apply hover effects if the button is not the active one
+//            if (!"active".equals(button.getUserData())) {
+//                button.setStyle(
+//                        "-fx-background-color: #f1f5f9;" +  // Slight background
+//                                "-fx-text-fill: #1e293b;" +         // Darker gray text
+//                                "-fx-font-weight: bold;" +         // Slightly bold
+//                                "-fx-background-radius: 6px;"      // Rounded corners
+//                );
+//            }
+//        });
+//
+//        button.setOnMouseExited(e -> {
+//            // Restore the appropriate style
+//            if ("active".equals(button.getUserData())) {
+//                button.setStyle(
+//                        "-fx-background-color: #e0e7ff;" +
+//                                "-fx-text-fill: #4f46e5;" +
+//                                "-fx-font-weight: bold;" +
+//                                "-fx-background-radius: 6px;"
+//                );
+//            } else {
+//                button.setStyle(
+//                        "-fx-background-color: transparent;" +
+//                                "-fx-text-fill: #64748b;" +
+//                                "-fx-font-weight: normal;" +
+//                                "-fx-background-radius: 6px;"
+//                );
+//            }
+//        });
+//    }
+
+
     private void setActiveButton(Button activeButton, Button... otherButtons) {
-        activeButton.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
-        
+        // Mark the active button and apply active style
+        activeButton.setUserData("active");
+        activeButton.setStyle(
+                "-fx-background-color: #e0e7ff;" +  // Light blue background for active button
+                        "-fx-text-fill: #4f46e5;" +        // Dark blue text
+                        "-fx-font-weight: bold;" +        // Bold font
+                        "-fx-font-size: 14px;" +          // Ensure proper font size
+                        "-fx-background-radius: 6px;"    // Rounded corners
+        );
+
+        // Reset styles for the other buttons
         for (Button button : otherButtons) {
-            button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+            button.setUserData("inactive");
+            button.setStyle(
+                    "-fx-background-color: transparent;" +   // Transparent background
+                            "-fx-text-fill: #64748b;" +             // Gray-blue text
+                            "-fx-font-weight: normal;" +            // Normal font weight
+                            "-fx-font-size: 14px;" +                // Ensure proper font size
+                            "-fx-background-radius: 6px;"          // Rounded corners
+            );
         }
+
+        // Update hover effects for consistency
+        addHoverEffects(activeButton, true);
+        for (Button button : otherButtons) {
+            addHoverEffects(button, false);
+        }
+    }
+
+    private void addHoverEffects(Button button, boolean isActive) {
+        button.setOnMouseEntered(e -> {
+            // Only apply hover if the button is inactive
+            if (!"active".equals(button.getUserData())) {
+                button.setStyle(
+                        "-fx-background-color: #f1f5f9;" +  // Light hover background
+                                "-fx-text-fill: #1e293b;" +         // Dark gray text
+                                "-fx-font-weight: bold;" +         // Slightly bold
+                                "-fx-font-size: 14px;" +           // Font size
+                                "-fx-background-radius: 6px;"      // Rounded corners
+                );
+            }
+        });
+
+        button.setOnMouseExited(e -> {
+            // Restore the appropriate style based on the button state
+            if ("active".equals(button.getUserData())) {
+                button.setStyle(
+                        "-fx-background-color: #e0e7ff;" +
+                                "-fx-text-fill: #4f46e5;" +
+                                "-fx-font-weight: bold;" +
+                                "-fx-font-size: 14px;" +
+                                "-fx-background-radius: 6px;"
+                );
+            } else {
+                button.setStyle(
+                        "-fx-background-color: transparent;" +
+                                "-fx-text-fill: #64748b;" +
+                                "-fx-font-weight: normal;" +
+                                "-fx-font-size: 14px;" +
+                                "-fx-background-radius: 6px;"
+                );
+            }
+        });
     }
 
     private VBox createMiniStatusChart() {
@@ -399,31 +575,144 @@ public class MainView extends Application {
         return statusBar;
     }
 
+//    private Button createNavButton(String text, boolean isActive) {
+//        Button button = new Button(text);
+//        button.setPrefWidth(190);
+//        button.setPadding(new Insets(12, 15, 12, 15));
+//        button.setAlignment(Pos.CENTER_LEFT);
+//
+//        // Helper to check if button is active by its style
+//        Runnable setActiveStyle = () -> button.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
+//        Runnable setInactiveStyle = () -> button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+//
+//        if (isActive) {
+//            setActiveStyle.run();
+//        } else {
+//            setInactiveStyle.run();
+//        }
+//
+//        button.setOnMouseEntered(e -> {
+//            // Only apply hover if not active
+//            if (!button.getStyle().contains("#e0e7ff")) {
+//                button.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 6px;");
+//            }
+//        });
+//
+//        button.setOnMouseExited(e -> {
+//            // Restore active/inactive style
+//            if (button.getStyle().contains("#e0e7ff")) {
+//                setActiveStyle.run();
+//            } else {
+//                setInactiveStyle.run();
+//            }
+//        });
+//
+//        return button;
+//    }
+
+//    private Button createNavButton(String text, boolean isActive) {
+//        Button button = new Button(text);
+//        button.setPrefWidth(190);
+//        button.setPadding(new Insets(12, 15, 12, 15));
+//        button.setAlignment(Pos.CENTER_LEFT);
+//        button.setStyle("-fx-font-size: 14px; -fx-font-family: 'Arial'; -fx-background-radius: 6px;");
+//
+//        // Helper to check if button is active by its style
+//        Runnable setActiveStyle = () -> button.setStyle(
+//                "-fx-background-color: #e0e7ff;" +  // Light blue background for active button
+//                        "-fx-text-fill: #4f46e5;" +       // Darker blue text color
+//                        "-fx-font-weight: bold;" +       // Bold font for emphasis
+//                        "-fx-font-size: 14px;" +         // Match font size and family
+//                        "-fx-background-radius: 6px;"   // Rounded corners
+//        );
+//
+//        Runnable setInactiveStyle = () -> button.setStyle(
+//                "-fx-background-color: transparent;" +  // Transparent background for inactive button
+//                        "-fx-text-fill: #64748b;" +             // Grayish-blue text color for inactive buttons
+//                        "-fx-font-weight: normal;" +           // Normal font weight
+//                        "-fx-font-size: 14px;" +               // Matching font size
+//                        "-fx-background-radius: 6px;"         // Rounded corners
+//        );
+//
+//        if (isActive) {
+//            setActiveStyle.run();
+//        } else {
+//            setInactiveStyle.run();
+//        }
+//
+//        // Add hover effect
+//        button.setOnMouseEntered(e -> {
+//            // Apply hover style if the button is not active
+//            if (!button.getStyle().contains("#e0e7ff")) {
+//                button.setStyle(
+//                        "-fx-background-color: #f1f5f9;" +  // Slightly lighter background on hover
+//                                "-fx-text-fill: #1e293b;" +        // Dark text color on hover
+//                                "-fx-font-weight: bold;" +        // A slightly bold font for hover
+//                                "-fx-font-size: 14px;" +          // Match font size
+//                                "-fx-background-radius: 6px;"    // Consistent corner radius
+//                );
+//            }
+//        });
+//
+//        button.setOnMouseExited(e -> {
+//            // Restore active/inactive style when hover exits
+//            if (button.getStyle().contains("#e0e7ff")) {
+//                setActiveStyle.run();
+//            } else {
+//                setInactiveStyle.run();
+//            }
+//        });
+//
+//        return button;
+//    }
+
+
     private Button createNavButton(String text, boolean isActive) {
         Button button = new Button(text);
         button.setPrefWidth(190);
         button.setPadding(new Insets(12, 15, 12, 15));
         button.setAlignment(Pos.CENTER_LEFT);
+        button.setStyle("-fx-font-size: 14px; -fx-font-family: 'Arial'; -fx-background-radius: 6px;");
 
-        // Helper to check if button is active by its style
-        Runnable setActiveStyle = () -> button.setStyle("-fx-background-color: #e0e7ff; -fx-text-fill: #4f46e5; -fx-font-weight: bold; -fx-background-radius: 6px;");
-        Runnable setInactiveStyle = () -> button.setStyle("-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-background-radius: 6px;");
+        // Define active and inactive styles
+        Runnable setActiveStyle = () -> button.setStyle(
+                "-fx-background-color: #e0e7ff;" +  // Light blue background for active button
+                        "-fx-text-fill: #4f46e5;" +        // Dark blue text color
+                        "-fx-font-weight: bold;" +        // Bold font
+                        "-fx-font-size: 14px;" +          // Matching font size
+                        "-fx-background-radius: 6px;"    // Rounded corners
+        );
 
+        Runnable setInactiveStyle = () -> button.setStyle(
+                "-fx-background-color: transparent;" + // Transparent background for inactive button
+                        "-fx-text-fill: #64748b;" +            // Gray text color
+                        "-fx-font-weight: normal;" +          // Normal font weight
+                        "-fx-font-size: 14px;" +              // Matching font size
+                        "-fx-background-radius: 6px;"         // Rounded corners
+        );
+
+        // Apply the initial style based on `isActive`
         if (isActive) {
             setActiveStyle.run();
         } else {
             setInactiveStyle.run();
         }
 
+        // Add hover effect
         button.setOnMouseEntered(e -> {
-            // Only apply hover if not active
-            if (!button.getStyle().contains("#e0e7ff")) {
-                button.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #1e293b; -fx-background-radius: 6px;");
+            if (!button.getStyle().contains("#e0e7ff")) { // Only hover if not active
+                button.setStyle(
+                        "-fx-background-color: #f1f5f9;" +  // Light hover background
+                                "-fx-text-fill: #1e293b;" +         // Dark gray text
+                                "-fx-font-weight: bold;" +         // Slightly bold
+                                "-fx-font-size: 14px;" +           // Match font size
+                                "-fx-background-radius: 6px;"      // Consistent corners
+                );
             }
         });
 
         button.setOnMouseExited(e -> {
-            // Restore active/inactive style
+            // Restore active/inactive style when hover exits
             if (button.getStyle().contains("#e0e7ff")) {
                 setActiveStyle.run();
             } else {
@@ -431,8 +720,10 @@ public class MainView extends Application {
             }
         });
 
+        // Return the prepared button
         return button;
     }
+
     
     private void createMainContentArea() {
         mainContentArea = new VBox(0);
@@ -1156,7 +1447,20 @@ private void applyFilters(String searchText, String priority, String status, Loc
         Button cancelButton = createMinimalButton("Cancel", "secondary");
         Button saveButton = createMinimalButton("Save Task", "primary");
         
-        cancelButton.setOnAction(e -> dialog.close());
+//        cancelButton.setOnAction(e -> dialog.close());
+        cancelButton.setOnAction(e -> {
+            // Restore the previously selected tab
+            contentTabPane.getSelectionModel().select(currentTabIndex);
+
+            // Restore the previously active button
+            if (currentActiveButton != null) {
+                setActiveButton(currentActiveButton, viewTasksBtn, priorityDashboardBtn, addTaskBtn);
+            }
+
+            // Close the dialog
+            dialog.close();
+        });
+
         saveButton.setOnAction(e -> {
             if (validateFields(titleField, descriptionField, dueDatePicker, priorityComboBox, categoryField, statusComboBox)) {
                 Task newTask = new Task(
@@ -1176,7 +1480,15 @@ private void applyFilters(String searchText, String priority, String status, Loc
                 updateNotifications();
                 // Refresh the priority dashboard
                 contentTabPane.getTabs().get(1).setContent(createPriorityDashboard());
-                
+
+                // Switch to the "View Tasks" tab
+                contentTabPane.getSelectionModel().select(0);
+
+                // Set the active button to "View Tasks"
+                setActiveButton(viewTasksBtn, priorityDashboardBtn, addTaskBtn);
+
+
+
                 dialog.close();
             }
         });
@@ -1664,13 +1976,13 @@ private void applyFilters(String searchText, String priority, String status, Loc
             
             
         private void showSignInWindow(Stage stage) {
-    // Replace 'SignInView' with your actual login window class
-    try {
+        // Replace 'SignInView' with your actual login window class
+        try {
         SignInView signInView = new SignInView();
         signInView.start(stage);
-    } catch (Exception e) {
+        } catch (Exception e) {
         e.printStackTrace();
-    }
+        }
 }
 
 private void updateNotifications() {
@@ -1709,114 +2021,530 @@ private ObservableList<Note> noteList = FXCollections.observableArrayList();
 private NotePersistence notePersistence = new NotePersistence();
 private static final DateTimeFormatter NOTE_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm");
 
-private void createNotesSection() {
-    notesSection = new VBox(15);
-    notesSection.setPrefWidth(350);
-    notesSection.setPadding(new Insets(20));
-    notesSection.setStyle("-fx-background-color: #fff; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;");
+//private void createNotesSection() {
+//    notesSection = new VBox(15);
+//    notesSection.setPrefWidth(350);
+//    notesSection.setPadding(new Insets(20));
+//    notesSection.setStyle("-fx-background-color: #fff; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;");
+//
+//    Label notesTitle = new Label("Notes");
+//    notesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+//
+//    notesListView = new ListView<>(noteList);
+//    notesListView.setCellFactory(lv -> new ListCell<Note>() {
+//        @Override
+//        protected void updateItem(Note note, boolean empty) {
+//            super.updateItem(note, empty);
+//            if (empty || note == null) {
+//                setText(null);
+//                setGraphic(null);
+//            } else {
+//                VBox noteBox = new VBox(2);
+//                Label content = new Label(note.getContent());
+//                content.setWrapText(true);
+//                content.setStyle("-fx-font-size: 13px; -fx-text-fill: #334155;");
+//                String formattedDate = note.getCreatedAt() != null
+//                        ? note.getCreatedAt().format(NOTE_DATE_FORMATTER)
+//                        : "";
+//                Label date = new Label(formattedDate);
+//                date.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
+//                noteBox.getChildren().addAll(content, date);
+//                setGraphic(noteBox);
+//            }
+//        }
+//    });
+//
+//    // Double click to edit note
+//    notesListView.setOnMouseClicked(e -> {
+//        if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+//            Note selected = notesListView.getSelectionModel().getSelectedItem();
+//            if (selected != null) showEditNoteDialog(selected);
+//        }
+//    });
+//
+//    // Add note area
+//    TextArea noteInput = new TextArea();
+//    noteInput.setPromptText("Add a note...");
+//    noteInput.setPrefRowCount(2);
+//    noteInput.setStyle("-fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: #cbd5e1;");
+//
+//    Button addNoteBtn = new Button("Add Note");
+//    addNoteBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-background-radius: 6px;");
+//    addNoteBtn.setOnAction(e -> {
+//        String content = noteInput.getText().trim();
+//        if (!content.isEmpty() && selectedTask != null) {
+//            Note note = new Note(0, content, java.time.LocalDateTime.now(), selectedTask.getId(), user.getId());
+//            notePersistence.addNote(note);
+//            updateNotesSection(selectedTask);
+//            noteInput.clear();
+//        }
+//    });
+//
+//    notesSection.getChildren().addAll(notesTitle, notesListView, noteInput, addNoteBtn);
+//    VBox.setVgrow(notesListView, Priority.ALWAYS);
+//}
 
-    Label notesTitle = new Label("Notes");
-    notesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+//    private void createNotesSection() {
+//        notesSection = new VBox(15);
+//        notesSection.setPrefWidth(350);
+//        notesSection.setPadding(new Insets(20));
+//        notesSection.setStyle(
+//                "-fx-background-color: #f8fafc;" +
+//                        "-fx-border-color: #e2e8f0;" +
+//                        "-fx-border-width: 0 1 0 0;" +
+//                        "-fx-background-radius: 12px;" +
+//                        "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 2, 2);");
+//
+//        Label notesTitle = new Label("Notes");
+//        notesTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1e293b;");
+//
+//        notesListView = new ListView<>(noteList);
+//        notesListView.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+//        notesListView.setCellFactory(lv -> new ListCell<Note>() {
+//            @Override
+//            protected void updateItem(Note note, boolean empty) {
+//                super.updateItem(note, empty);
+//                if (empty || note == null) {
+//                    setText(null);
+//                    setGraphic(null);
+//                } else {
+//                    VBox noteBox = new VBox(5);
+//                    noteBox.setPadding(new Insets(10));
+//                    noteBox.setStyle(
+//                            "-fx-background-color: #ffffff;" +
+//                                    "-fx-border-radius: 8px;" +
+//                                    "-fx-background-radius: 8px;" +
+//                                    "-fx-border-color: #e2e8f0;" +
+//                                    "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 1, 1);");
+//
+//                    noteBox.setOnMouseEntered(e -> noteBox.setStyle(
+//                            "-fx-background-color: #f1f5f9;" +
+//                                    "-fx-border-radius: 8px;" +
+//                                    "-fx-background-radius: 8px;" +
+//                                    "-fx-border-color: #cbd5e1;" +
+//                                    "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 6, 0, 2, 2);"));
+//
+//                    noteBox.setOnMouseExited(e -> noteBox.setStyle(
+//                            "-fx-background-color: #ffffff;" +
+//                                    "-fx-border-radius: 8px;" +
+//                                    "-fx-background-radius: 8px;" +
+//                                    "-fx-border-color: #e2e8f0;" +
+//                                    "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 5, 0, 1, 1);"));
+//
+//                    Label content = new Label(note.getContent());
+//                    content.setWrapText(true);
+//                    content.setStyle("-fx-font-size: 13px; -fx-text-fill: #334155;");
+//
+//                    String formattedDate = note.getCreatedAt() != null
+//                            ? note.getCreatedAt().format(NOTE_DATE_FORMATTER)
+//                            : "";
+//
+//                    Label date = new Label(formattedDate);
+//                    date.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
+//
+//                    noteBox.getChildren().addAll(content, date);
+//                    setGraphic(noteBox);
+//                }
+//            }
+//        });
+//
+//
+//
+//        // Double click to edit note
+//        notesListView.setOnMouseClicked(e -> {
+//            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+//                Note selected = notesListView.getSelectionModel().getSelectedItem();
+//                if (selected != null) showEditNoteDialog(selected);
+//            }
+//        });
+//
+//        // Add note area
+//        TextArea noteInput = new TextArea();
+//        noteInput.setPromptText("Add a note...");
+//        noteInput.setPrefRowCount(2);
+//        noteInput.setStyle(
+//                "-fx-background-color: #ffffff;" +
+//                        "-fx-border-radius: 6px;" +
+//                        "-fx-background-radius: 6px;" +
+//                        "-fx-border-color: #cbd5e1;" +
+//                        "-fx-padding: 10px;" +
+//                        "-fx-font-size: 13px;");
+//
+//        // Add Note Button
+//        Button addNoteBtn = new Button("Add Note");
+//        addNoteBtn.setStyle(
+//                "-fx-background-color: #4f46e5;" +
+//                        "-fx-text-fill: white;" +
+//                        "-fx-background-radius: 6px;" +
+//                        "-fx-font-size: 14px; -fx-padding: 8px 15px;");
+//        addNoteBtn.setOnMouseEntered(e -> addNoteBtn.setStyle(
+//                "-fx-background-color: #4338ca;" +
+//                        "-fx-text-fill: white;" +
+//                        "-fx-background-radius: 6px;" +
+//                        "-fx-font-size: 14px; -fx-padding: 8px 15px;"));
+//
+//        addNoteBtn.setOnMouseExited(e -> addNoteBtn.setStyle(
+//                "-fx-background-color: #4f46e5;" +
+//                        "-fx-text-fill: white;" +
+//                        "-fx-background-radius: 6px;" +
+//                        "-fx-font-size: 14px; -fx-padding: 8px 15px;"));
+//
+//        addNoteBtn.setOnAction(e -> {
+//            String content = noteInput.getText().trim();
+//            if (!content.isEmpty() && selectedTask != null) {
+//                Note note = new Note(0, content, java.time.LocalDateTime.now(), selectedTask.getId(), user.getId());
+//                notePersistence.addNote(note);
+//                updateNotesSection(selectedTask);
+//                noteInput.clear();
+//            }
+//        });
+//
+//        notesSection.getChildren().addAll(notesTitle, notesListView, noteInput, addNoteBtn);
+//        VBox.setVgrow(notesListView, Priority.ALWAYS);
+//    }
 
-    notesListView = new ListView<>(noteList);
-    notesListView.setCellFactory(lv -> new ListCell<Note>() {
-        @Override
-        protected void updateItem(Note note, boolean empty) {
-            super.updateItem(note, empty);
-            if (empty || note == null) {
-                setText(null);
-                setGraphic(null);
-            } else {
-                VBox noteBox = new VBox(2);
-                Label content = new Label(note.getContent());
-                content.setWrapText(true);
-                content.setStyle("-fx-font-size: 13px; -fx-text-fill: #334155;");
-                String formattedDate = note.getCreatedAt() != null
-                        ? note.getCreatedAt().format(NOTE_DATE_FORMATTER)
-                        : "";
-                Label date = new Label(formattedDate);
-                date.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8;");
-                noteBox.getChildren().addAll(content, date);
-                setGraphic(noteBox);
+
+    private void createNotesSection() {
+        notesSection = new VBox(15);
+        notesSection.setPrefWidth(350);
+        notesSection.setPadding(new Insets(20));
+        notesSection.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #f9fafb, #f3f4f6);" +
+                        "-fx-border-color: #e5e7eb;" +
+                        "-fx-border-width: 0 1 0 0;" +
+                        "-fx-background-radius: 15px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0.2, 0, 4);");
+
+        Label notesTitle = new Label("Notes");
+        notesTitle.setStyle("-fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: #111827;");
+
+        notesListView = new ListView<>(noteList);
+        notesListView.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-padding: 5px;");
+        notesListView.setCellFactory(lv -> new ListCell<Note>() {
+            @Override
+            protected void updateItem(Note note, boolean empty) {
+                super.updateItem(note, empty);
+                if (empty || note == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    VBox noteBox = new VBox(5);
+                    noteBox.setPadding(new Insets(12));
+                    noteBox.setStyle(
+                            "-fx-background-color: #ffffff;" +
+                                    "-fx-border-radius: 10px;" +
+                                    "-fx-background-radius: 10px;" +
+                                    "-fx-border-color: #e5e7eb;" +
+                                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0.1, 0, 2);" +
+                                    "-fx-cursor: hand;");
+
+                    // Smooth hover effect
+                    noteBox.hoverProperty().addListener((obs, oldVal, isHovering) -> {
+                        if (isHovering) {
+                            noteBox.setStyle(
+                                    "-fx-background-color: #f9fafb;" +
+                                            "-fx-border-radius: 10px;" +
+                                            "-fx-background-radius: 10px;" +
+                                            "-fx-border-color: #d1d5db;" +
+                                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 8, 0.2, 0, 3);" +
+                                            "-fx-cursor: hand;");
+                        } else {
+                            noteBox.setStyle(
+                                    "-fx-background-color: #ffffff;" +
+                                            "-fx-border-radius: 10px;" +
+                                            "-fx-background-radius: 10px;" +
+                                            "-fx-border-color: #e5e7eb;" +
+                                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0.1, 0, 2);" +
+                                            "-fx-cursor: hand;");
+                        }
+                    });
+
+                    // Press effect
+                    noteBox.setOnMousePressed(e -> noteBox.setStyle(
+                            "-fx-background-color: #f3f4f6;" +
+                                    "-fx-border-radius: 10px;" +
+                                    "-fx-background-radius: 10px;" +
+                                    "-fx-border-color: #d1d5db;" +
+                                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 4, 0.1, 0, 1);"));
+
+                    Label content = new Label(note.getContent());
+                    content.setWrapText(true);
+                    content.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151;");
+
+                    String formattedDate = note.getCreatedAt() != null
+                            ? note.getCreatedAt().format(NOTE_DATE_FORMATTER)
+                            : "";
+
+                    Label date = new Label(formattedDate);
+                    date.setStyle("-fx-font-size: 11px; -fx-text-fill: #9ca3af;");
+
+                    noteBox.getChildren().addAll(content, date);
+                    setGraphic(noteBox);
+                }
             }
-        }
-    });
+        });
 
-    // Double click to edit note
-    notesListView.setOnMouseClicked(e -> {
-        if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
-            Note selected = notesListView.getSelectionModel().getSelectedItem();
-            if (selected != null) showEditNoteDialog(selected);
-        }
-    });
+        // Double click to edit note
+        notesListView.setOnMouseClicked(e -> {
+            if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2) {
+                Note selected = notesListView.getSelectionModel().getSelectedItem();
+                if (selected != null) showEditNoteDialog(selected);
+            }
+        });
 
-    // Add note area
-    TextArea noteInput = new TextArea();
-    noteInput.setPromptText("Add a note...");
-    noteInput.setPrefRowCount(2);
-    noteInput.setStyle("-fx-background-radius: 6px; -fx-border-radius: 6px; -fx-border-color: #cbd5e1;");
+        // Add note area
+        TextArea noteInput = new TextArea();
+        noteInput.setPromptText("Add a note...");
+        noteInput.setPrefRowCount(3);
+        noteInput.setStyle(
+                "-fx-background-color: #ffffff;" +
+                        "-fx-border-radius: 8px;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-border-color: #d1d5db;" +
+                        "-fx-padding: 12px;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 4, 0.1, 0, 1);");
 
-    Button addNoteBtn = new Button("Add Note");
-    addNoteBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-background-radius: 6px;");
-    addNoteBtn.setOnAction(e -> {
-        String content = noteInput.getText().trim();
-        if (!content.isEmpty() && selectedTask != null) {
-            Note note = new Note(0, content, java.time.LocalDateTime.now(), selectedTask.getId(), user.getId());
-            notePersistence.addNote(note);
-            updateNotesSection(selectedTask);
-            noteInput.clear();
-        }
-    });
+        // Add Note Button with smooth transition
+        Button addNoteBtn = new Button("Add Note");
+        addNoteBtn.setStyle(
+                "-fx-background-color: #4f46e5;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-font-size: 14px; " +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(79,70,229,0.3), 6, 0.2, 0, 2);");
 
-    notesSection.getChildren().addAll(notesTitle, notesListView, noteInput, addNoteBtn);
-    VBox.setVgrow(notesListView, Priority.ALWAYS);
-}
+        // Button hover effect
+        addNoteBtn.setOnMouseEntered(e -> addNoteBtn.setStyle(
+                "-fx-background-color: #4338ca;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-font-size: 14px; " +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(67,56,202,0.4), 8, 0.3, 0, 3);"));
+
+        addNoteBtn.setOnMouseExited(e -> addNoteBtn.setStyle(
+                "-fx-background-color: #4f46e5;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-font-size: 14px; " +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(79,70,229,0.3), 6, 0.2, 0, 2);"));
+
+        // Button press effect
+        addNoteBtn.setOnMousePressed(e -> addNoteBtn.setStyle(
+                "-fx-background-color: #3730a3;" +
+                        "-fx-text-fill: white;" +
+                        "-fx-background-radius: 8px;" +
+                        "-fx-font-size: 14px; " +
+                        "-fx-padding: 10px 20px;" +
+                        "-fx-cursor: hand;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(55,48,163,0.3), 4, 0.1, 0, 1);"));
+
+        addNoteBtn.setOnAction(e -> {
+            String content = noteInput.getText().trim();
+            if (!content.isEmpty() && selectedTask != null) {
+                Note note = new Note(0, content, java.time.LocalDateTime.now(), selectedTask.getId(), user.getId());
+                notePersistence.addNote(note);
+                updateNotesSection(selectedTask);
+                noteInput.clear();
+            }
+        });
+
+        notesSection.getChildren().addAll(notesTitle, notesListView, noteInput, addNoteBtn);
+        VBox.setVgrow(notesListView, Priority.ALWAYS);
+    }
 
 private void updateNotesSection(Task task) {
     noteList.setAll(notePersistence.getNotesByTask(task.getId()));
 }
 
+//private void showEditNoteDialog(Note note) {
+//    Stage dialog = new Stage();
+//    dialog.initModality(Modality.APPLICATION_MODAL);
+//    dialog.setTitle("Edit Note");
+//    dialog.setMinWidth(350);
+//
+//    VBox content = new VBox(15);
+//    content.setPadding(new Insets(20));
+//
+//    TextArea noteArea = new TextArea(note.getContent());
+//    noteArea.setPrefRowCount(3);
+//
+//    HBox buttons = new HBox(10);
+//    Button saveBtn = new Button("Save");
+//    Button deleteBtn = new Button("Delete");
+//    Button cancelBtn = new Button("Cancel");
+//
+//    saveBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
+//    deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
+//    cancelBtn.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #64748b;");
+//
+//    buttons.getChildren().addAll(saveBtn, deleteBtn, cancelBtn);
+//    content.getChildren().addAll(noteArea, buttons);
+//
+//    Scene dialogScene = new Scene(content);
+//    dialogScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+//    dialog.setScene(dialogScene);
+//
+//    // Set button actions
+//    cancelBtn.setOnAction(e -> dialog.close());
+//    saveBtn.setOnAction(e -> {
+//        note.setContent(noteArea.getText());
+//        notePersistence.updateNote(note);
+//        updateNotesSection(selectedTask);
+//        dialog.close();
+//    });
+//    deleteBtn.setOnAction(e -> {
+//        notePersistence.deleteNote(note.getId());
+//        updateNotesSection(selectedTask);
+//        dialog.close();
+//    });
+//    cancelBtn.setOnAction(e -> dialog.close());
+//
+//    dialog.show();
+//}
 private void showEditNoteDialog(Note note) {
+    // Create dialog
     Stage dialog = new Stage();
     dialog.initModality(Modality.APPLICATION_MODAL);
     dialog.setTitle("Edit Note");
-    dialog.setMinWidth(350);
+    dialog.setMinWidth(400);
 
-    VBox content = new VBox(15);
-    content.setPadding(new Insets(20));
+    // Container with spacing and padding
+    VBox content = new VBox(20);
+    content.setPadding(new Insets(25));
+    content.setStyle(
+            "-fx-background-color: #ffffff;" +
+                    "-fx-background-radius: 12px;" +
+                    "-fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 2, 2);"
+    );
 
+    // Input for note content
     TextArea noteArea = new TextArea(note.getContent());
+    noteArea.setPromptText("Edit your note...");
     noteArea.setPrefRowCount(3);
+    noteArea.setStyle(
+            "-fx-background-color: #f8fafc;" +
+                    "-fx-border-color: #cbd5e1;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-padding: 12px;" +
+                    "-fx-font-size: 13px;"
+    );
+    noteArea.setOnMouseEntered(e -> noteArea.setStyle(
+            "-fx-background-color: #ffffff;" +
+                    "-fx-border-color: #94a3b8;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-padding: 12px;" +
+                    "-fx-font-size: 13px;"
+    ));
+    noteArea.setOnMouseExited(e -> noteArea.setStyle(
+            "-fx-background-color: #f8fafc;" +
+                    "-fx-border-color: #cbd5e1;" +
+                    "-fx-border-radius: 8px;" +
+                    "-fx-background-radius: 8px;" +
+                    "-fx-padding: 12px;" +
+                    "-fx-font-size: 13px;"
+    ));
 
-    HBox buttons = new HBox(10);
+    // Buttons container
+    HBox buttons = new HBox(15);
+    buttons.setAlignment(Pos.CENTER_RIGHT);
+
+    // Save Button
     Button saveBtn = new Button("Save");
+    saveBtn.setStyle(
+            "-fx-background-color: #4f46e5;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    );
+    saveBtn.setOnMouseEntered(e -> saveBtn.setStyle(
+            "-fx-background-color: #4338ca;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
+    saveBtn.setOnMouseExited(e -> saveBtn.setStyle(
+            "-fx-background-color: #4f46e5;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
+
+    // Delete Button
     Button deleteBtn = new Button("Delete");
+    deleteBtn.setStyle(
+            "-fx-background-color: #ef4444;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    );
+    deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(
+            "-fx-background-color: #dc2626;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
+    deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(
+            "-fx-background-color: #ef4444;" +
+                    "-fx-text-fill: white;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
+
+    // Cancel Button
     Button cancelBtn = new Button("Cancel");
+    cancelBtn.setStyle(
+            "-fx-background-color: #e2e8f0;" +
+                    "-fx-text-fill: #64748b;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    );
+    cancelBtn.setOnMouseEntered(e -> cancelBtn.setStyle(
+            "-fx-background-color: #cbd5e1;" +
+                    "-fx-text-fill: #475569;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
+    cancelBtn.setOnMouseExited(e -> cancelBtn.setStyle(
+            "-fx-background-color: #e2e8f0;" +
+                    "-fx-text-fill: #64748b;" +
+                    "-fx-background-radius: 6px;" +
+                    "-fx-font-size: 14px; -fx-padding: 8px 15px;"
+    ));
 
-    saveBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
-    deleteBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
-    cancelBtn.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #64748b;");
-
+    // Add buttons to the container
     buttons.getChildren().addAll(saveBtn, deleteBtn, cancelBtn);
+
+    // Add content to the dialog
     content.getChildren().addAll(noteArea, buttons);
 
+    // Setup scene
     Scene dialogScene = new Scene(content);
     dialogScene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
     dialog.setScene(dialogScene);
 
-    // Set button actions
-    cancelBtn.setOnAction(e -> dialog.close());
+    // Button actions
     saveBtn.setOnAction(e -> {
         note.setContent(noteArea.getText());
         notePersistence.updateNote(note);
         updateNotesSection(selectedTask);
         dialog.close();
     });
+
     deleteBtn.setOnAction(e -> {
         notePersistence.deleteNote(note.getId());
         updateNotesSection(selectedTask);
         dialog.close();
     });
+
     cancelBtn.setOnAction(e -> dialog.close());
 
     dialog.show();
