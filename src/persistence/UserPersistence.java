@@ -22,7 +22,7 @@ public class UserPersistence {
     }
 
     public boolean authenticateUser(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username=? AND password=?";
+        String sql = "SELECT * FROM users WHERE BINARY username=? AND BINARY password=?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);

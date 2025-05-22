@@ -22,7 +22,7 @@ public class DatabasePersistence implements TaskPersistence {
     public void addTask(Task task) {
         String sql = "INSERT INTO tasks (title, description, due_date, priority, category, status, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, task.getTitle());
             stmt.setString(2, task.getDescription());
             stmt.setDate(3, java.sql.Date.valueOf(task.getDueDate()));
@@ -31,6 +31,12 @@ public class DatabasePersistence implements TaskPersistence {
             stmt.setString(6, task.getStatus());
             stmt.setInt(7, task.getUserId());
             stmt.executeUpdate();
+
+            // Get the generated ID and set it on the task object
+            ResultSet generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                task.setId(generatedKeys.getInt(1));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
